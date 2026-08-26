@@ -1,0 +1,34 @@
+{
+  "doc_id": "sg-social-connection",
+  "title": "Our Epidemic of Loneliness and Isolation: U.S. Surgeon General's Advisory on Social Connection",
+  "issuer": "Office of the U.S. Surgeon General / HHS",
+  "version": "2023",
+  "edition_date": "2023",
+  "source_url": "https://www.hhs.gov/sites/default/files/surgeon-general-social-connection-advisory.pdf",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "social_connection",
+    "loneliness",
+    "isolation",
+    "community",
+    "workplace"
+  ],
+  "governing_for": [
+    "social_connection",
+    "loneliness_isolation"
+  ],
+  "sections": [
+    {
+      "anchor": "evidence",
+      "label": "Health effects of connection",
+      "topic": "social_connection"
+    },
+    {
+      "anchor": "workplace",
+      "label": "Workplace recommendations",
+      "topic": "workplace"
+    }
+  ],
+  "content_hash": "sha256:117ce522b88d31d6fddc9616e5829e7d1631638c3b39774ce52e8391795685d0"
+}

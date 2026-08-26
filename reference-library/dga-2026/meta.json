@@ -1,0 +1,43 @@
+{
+  "doc_id": "dga-2026",
+  "title": "Dietary Guidelines for Americans, 2025-2030 (10th Edition)",
+  "issuer": "USDA / HHS",
+  "version": "2025-2030",
+  "edition_date": "2026",
+  "source_url": "https://www.dietaryguidelines.gov/",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "nutrition",
+    "diet",
+    "added_sugars",
+    "alcohol",
+    "sodium",
+    "healthy_eating"
+  ],
+  "governing_for": [
+    "dietary_pattern",
+    "added_sugars",
+    "alcohol_exclusion_groups",
+    "numeric_dietary_target",
+    "sodium_intake"
+  ],
+  "sections": [
+    {
+      "anchor": "alcohol",
+      "label": "Limit Alcoholic Beverages",
+      "topic": "alcohol"
+    },
+    {
+      "anchor": "added-sugars",
+      "label": "Added sugars",
+      "topic": "added_sugars"
+    },
+    {
+      "anchor": "patterns",
+      "label": "Healthy dietary patterns",
+      "topic": "nutrition"
+    }
+  ],
+  "content_hash": "sha256:8c09818fa06652673522a7594955fbdd4434d3164dc24cddaa2c60867d9ea7f0"
+}

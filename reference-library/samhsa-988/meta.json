@@ -1,0 +1,27 @@
+{
+  "doc_id": "samhsa-988",
+  "title": "988 Suicide & Crisis Lifeline - Key Messages",
+  "issuer": "Substance Abuse and Mental Health Services Administration (SAMHSA)",
+  "version": "current",
+  "edition_date": "2024",
+  "source_url": "https://www.samhsa.gov/resource/988/988-key-messages",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "mental_health",
+    "crisis",
+    "suicide",
+    "988"
+  ],
+  "governing_for": [
+    "crisis_resource_messaging"
+  ],
+  "sections": [
+    {
+      "anchor": "988",
+      "label": "988 access & messaging",
+      "topic": "crisis"
+    }
+  ],
+  "content_hash": "sha256:b56a7edb13c31c8562bca0ca784ad90d3264faba0e871aeb6ed301a62cb59110"
+}

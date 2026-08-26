@@ -1,0 +1,26 @@
+{
+  "doc_id": "rdn-scope-standards",
+  "title": "Revised 2024 Scope and Standards of Practice for the RDN",
+  "issuer": "Commission on Dietetic Registration",
+  "version": "2024",
+  "edition_date": "2024-01",
+  "source_url": "https://www.cdrnet.org/scope",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "scope_of_practice",
+    "dietetics",
+    "professional_standards"
+  ],
+  "governing_for": [
+    "rdn_scope_of_practice"
+  ],
+  "sections": [
+    {
+      "anchor": "scope",
+      "label": "Scope of practice",
+      "topic": "scope_of_practice"
+    }
+  ],
+  "content_hash": "sha256:b3f44e5c27268f3eacd8812f88b3f09a40346fa7cc3909264700f55dfdf641f7"
+}

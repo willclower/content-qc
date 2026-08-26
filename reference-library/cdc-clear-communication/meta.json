@@ -1,0 +1,26 @@
+{
+  "doc_id": "cdc-clear-communication",
+  "title": "CDC Clear Communication Index - User Guide",
+  "issuer": "Centers for Disease Control and Prevention",
+  "version": "2019",
+  "edition_date": "2019-08",
+  "source_url": "https://stacks.cdc.gov/view/cdc/103706",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "communication",
+    "health_literacy",
+    "clarity"
+  ],
+  "governing_for": [
+    "communication_clarity"
+  ],
+  "sections": [
+    {
+      "anchor": "index",
+      "label": "Clear Communication Index criteria",
+      "topic": "clarity"
+    }
+  ],
+  "content_hash": "sha256:a0bc0422f1b1ec4878dc28d92feca1dd7434b4e1817ece6a31ebfb8ef3c30163"
+}

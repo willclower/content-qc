@@ -1,0 +1,26 @@
+{
+  "doc_id": "ahrq-health-literacy",
+  "title": "AHRQ Health Literacy Universal Precautions Toolkit, 3rd Edition",
+  "issuer": "Agency for Healthcare Research and Quality",
+  "version": "3rd ed. (2024)",
+  "edition_date": "2024-03",
+  "source_url": "https://www.ahrq.gov/health-literacy/improve/precautions/toolkit.html",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "health_literacy",
+    "readability",
+    "plain_language"
+  ],
+  "governing_for": [
+    "health_literacy"
+  ],
+  "sections": [
+    {
+      "anchor": "toolkit",
+      "label": "Universal precautions toolkit",
+      "topic": "health_literacy"
+    }
+  ],
+  "content_hash": "sha256:ef091fb74ea27b9376c00d232900b5192f73018823625aa02ad46dc9ac27a5a0"
+}

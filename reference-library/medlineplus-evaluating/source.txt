@@ -1,0 +1,1 @@
+STUB: full extracted text of medlineplus-evaluating goes here at corpus load.

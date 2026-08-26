@@ -1,0 +1,41 @@
+{
+  "doc_id": "ada-diabetes",
+  "title": "Standards of Care in Diabetes-2026",
+  "issuer": "American Diabetes Association",
+  "version": "2026",
+  "edition_date": "2026",
+  "source_url": "https://diabetesjournals.org/care/issue/49/Supplement_1",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "diabetes",
+    "prediabetes",
+    "weight_management",
+    "cardiovascular_risk",
+    "nutrition",
+    "lifestyle"
+  ],
+  "governing_for": [
+    "diabetes_lifestyle",
+    "prediabetes_prevention",
+    "diabetes_weight_management"
+  ],
+  "sections": [
+    {
+      "anchor": "prevention",
+      "label": "Prevention / prediabetes",
+      "topic": "prediabetes"
+    },
+    {
+      "anchor": "lifestyle",
+      "label": "Lifestyle & nutrition therapy",
+      "topic": "lifestyle"
+    },
+    {
+      "anchor": "obesity",
+      "label": "Obesity & weight management",
+      "topic": "weight_management"
+    }
+  ],
+  "content_hash": "sha256:4384be2e496f2e6a1f488af74ab063e4216c3ddfd725b4d42cfb58ed68b7cf24"
+}

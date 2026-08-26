@@ -1,0 +1,26 @@
+{
+  "doc_id": "nutrition-code-of-ethics",
+  "title": "Code of Ethics for the Nutrition and Dietetics Profession",
+  "issuer": "Academy of Nutrition and Dietetics / CDR",
+  "version": "2018",
+  "edition_date": "2018-06-01",
+  "source_url": "https://www.eatrightpro.org/practice/code-of-ethics/code-of-ethics-for-the-nutrition-and-dietetics-profession",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "ethics",
+    "dietetics",
+    "professional_standards"
+  ],
+  "governing_for": [
+    "dietetics_ethics"
+  ],
+  "sections": [
+    {
+      "anchor": "ethics",
+      "label": "Code of Ethics principles",
+      "topic": "ethics"
+    }
+  ],
+  "content_hash": "sha256:b5d45dffbf52d8dbefbc00e5b6d4e9fbaff0f6a0a7a6a7d23c0ecd3fb45fddc4"
+}

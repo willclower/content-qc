@@ -1,0 +1,685 @@
+{
+  "generated_at": "2026-08-26T23:05:50.917Z",
+  "doc_count": 16,
+  "claim_domains": {
+    "added_sugars": [
+      "dga-2026"
+    ],
+    "alcohol_exclusion_groups": [
+      "dga-2026"
+    ],
+    "alcohol_limits": [
+      "aha-hypertension"
+    ],
+    "blood_pressure_thresholds": [
+      "aha-hypertension"
+    ],
+    "communication_clarity": [
+      "cdc-clear-communication"
+    ],
+    "crisis_resource_messaging": [
+      "samhsa-988"
+    ],
+    "diabetes_lifestyle": [
+      "ada-diabetes"
+    ],
+    "diabetes_weight_management": [
+      "ada-diabetes"
+    ],
+    "dietary_pattern": [
+      "dga-2026"
+    ],
+    "dietetics_ethics": [
+      "nutrition-code-of-ethics"
+    ],
+    "glp1_therapy": [
+      "who-glp1"
+    ],
+    "health_literacy": [
+      "ahrq-health-literacy"
+    ],
+    "hypertension_lifestyle": [
+      "aha-hypertension"
+    ],
+    "loneliness_isolation": [
+      "sg-social-connection"
+    ],
+    "muscle_strengthening": [
+      "hhs-physical-activity"
+    ],
+    "numeric_dietary_target": [
+      "dga-2026"
+    ],
+    "obesity_pharmacotherapy_boundary": [
+      "who-glp1"
+    ],
+    "physical_activity_dose": [
+      "hhs-physical-activity"
+    ],
+    "prediabetes_prevention": [
+      "ada-diabetes"
+    ],
+    "rdn_scope_of_practice": [
+      "rdn-scope-standards"
+    ],
+    "safe_suicide_messaging": [
+      "aas-messaging-framework"
+    ],
+    "sedentary_behavior": [
+      "hhs-physical-activity"
+    ],
+    "sleep_duration": [
+      "aasm-sleep"
+    ],
+    "social_connection": [
+      "sg-social-connection"
+    ],
+    "sodium_intake": [
+      "dga-2026"
+    ]
+  },
+  "topics": [
+    "988",
+    "added_sugars",
+    "aerobic",
+    "alcohol",
+    "aspirin",
+    "blood_pressure",
+    "cardiovascular_disease",
+    "cardiovascular_risk",
+    "cholesterol",
+    "clarity",
+    "communication",
+    "community",
+    "crisis",
+    "diabetes",
+    "diet",
+    "dietetics",
+    "ethics",
+    "exercise",
+    "external_resources",
+    "glp1",
+    "health_information",
+    "health_literacy",
+    "healthy_eating",
+    "hypertension",
+    "isolation",
+    "lifestyle",
+    "links",
+    "loneliness",
+    "medication",
+    "mental_health",
+    "messaging",
+    "nutrition",
+    "obesity",
+    "physical_activity",
+    "plain_language",
+    "prediabetes",
+    "prevention",
+    "professional_standards",
+    "readability",
+    "safe_messaging",
+    "scope_of_practice",
+    "sedentary",
+    "sleep",
+    "sleep_duration",
+    "social_connection",
+    "sodium",
+    "source_evaluation",
+    "strength",
+    "suicide",
+    "tobacco",
+    "weight_management",
+    "workplace"
+  ],
+  "docs": [
+    {
+      "doc_id": "aas-messaging-framework",
+      "title": "Framework for Successful Messaging (Overview)",
+      "issuer": "National Action Alliance for Suicide Prevention",
+      "version": "2018",
+      "status": "governing",
+      "topics": [
+        "mental_health",
+        "suicide",
+        "messaging",
+        "safe_messaging"
+      ],
+      "governing_for": [
+        "safe_suicide_messaging"
+      ],
+      "sections": [
+        {
+          "anchor": "safe",
+          "label": "Safe & positive messaging",
+          "topic": "safe_messaging"
+        }
+      ],
+      "content_hash": "sha256:a143752960c8b084eae4663a7d77c09087db98bf4b1415dac9cb54b927e97592",
+      "source_url": "https://theactionalliance.org/sites/default/files/framework_overview_apr2019.pdf",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "aas-messaging-framework/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "aasm-sleep",
+      "title": "Recommended Amount of Sleep for a Healthy Adult: AASM/SRS Joint Consensus Statement",
+      "issuer": "American Academy of Sleep Medicine / Sleep Research Society",
+      "version": "2015",
+      "status": "governing",
+      "topics": [
+        "sleep",
+        "sleep_duration"
+      ],
+      "governing_for": [
+        "sleep_duration"
+      ],
+      "sections": [
+        {
+          "anchor": "duration",
+          "label": "Adult sleep duration (7+ hrs)",
+          "topic": "sleep_duration"
+        }
+      ],
+      "content_hash": "sha256:26907ee10ae6e9435cab294496ca6d011672a5b239c696e7345b090e4607eaad",
+      "source_url": "https://www.aasm.org/resources/pdf/adultsleepdurationconsensus.pdf",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "aasm-sleep/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "ada-diabetes",
+      "title": "Standards of Care in Diabetes-2026",
+      "issuer": "American Diabetes Association",
+      "version": "2026",
+      "status": "governing",
+      "topics": [
+        "diabetes",
+        "prediabetes",
+        "weight_management",
+        "cardiovascular_risk",
+        "nutrition",
+        "lifestyle"
+      ],
+      "governing_for": [
+        "diabetes_lifestyle",
+        "prediabetes_prevention",
+        "diabetes_weight_management"
+      ],
+      "sections": [
+        {
+          "anchor": "prevention",
+          "label": "Prevention / prediabetes",
+          "topic": "prediabetes"
+        },
+        {
+          "anchor": "lifestyle",
+          "label": "Lifestyle & nutrition therapy",
+          "topic": "lifestyle"
+        },
+        {
+          "anchor": "obesity",
+          "label": "Obesity & weight management",
+          "topic": "weight_management"
+        }
+      ],
+      "content_hash": "sha256:4384be2e496f2e6a1f488af74ab063e4216c3ddfd725b4d42cfb58ed68b7cf24",
+      "source_url": "https://diabetesjournals.org/care/issue/49/Supplement_1",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "ada-diabetes/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "aha-cvd-prevention",
+      "title": "2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease",
+      "issuer": "American College of Cardiology / American Heart Association",
+      "version": "2019",
+      "status": "context",
+      "topics": [
+        "cardiovascular_disease",
+        "prevention",
+        "cholesterol",
+        "tobacco",
+        "physical_activity",
+        "diet",
+        "aspirin"
+      ],
+      "governing_for": [
+        "cvd_primary_prevention"
+      ],
+      "sections": [
+        {
+          "anchor": "lifestyle",
+          "label": "Healthy lifestyle & diet",
+          "topic": "diet"
+        },
+        {
+          "anchor": "tobacco",
+          "label": "Tobacco cessation",
+          "topic": "tobacco"
+        }
+      ],
+      "content_hash": "sha256:e773529c9ff7dcc596e676f9738e750fdfe5b53b791f229850d177809b133d10",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7734661/",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "aha-cvd-prevention/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "aha-hypertension",
+      "title": "2025 AHA/ACC Guideline for the Prevention, Detection, Evaluation and Management of High Blood Pressure in Adults",
+      "issuer": "American Heart Association / American College of Cardiology",
+      "version": "2025",
+      "status": "governing",
+      "topics": [
+        "hypertension",
+        "blood_pressure",
+        "alcohol",
+        "cardiovascular_disease",
+        "lifestyle"
+      ],
+      "governing_for": [
+        "blood_pressure_thresholds",
+        "alcohol_limits",
+        "hypertension_lifestyle"
+      ],
+      "sections": [
+        {
+          "anchor": "bp-thresholds",
+          "label": "BP categories & thresholds",
+          "topic": "blood_pressure"
+        },
+        {
+          "anchor": "alcohol-limits",
+          "label": "Alcohol & blood pressure",
+          "topic": "alcohol"
+        },
+        {
+          "anchor": "lifestyle",
+          "label": "Lifestyle interventions",
+          "topic": "hypertension_lifestyle"
+        }
+      ],
+      "content_hash": "sha256:e1e0a7be722a0187a9ed170f580cdff8500138fab0f260e8bfd8687b2a84ed90",
+      "source_url": "https://doi.org/10.1161/CIR.0000000000001356",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "aha-hypertension/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "ahrq-health-literacy",
+      "title": "AHRQ Health Literacy Universal Precautions Toolkit, 3rd Edition",
+      "issuer": "Agency for Healthcare Research and Quality",
+      "version": "3rd ed. (2024)",
+      "status": "governing",
+      "topics": [
+        "health_literacy",
+        "readability",
+        "plain_language"
+      ],
+      "governing_for": [
+        "health_literacy"
+      ],
+      "sections": [
+        {
+          "anchor": "toolkit",
+          "label": "Universal precautions toolkit",
+          "topic": "health_literacy"
+        }
+      ],
+      "content_hash": "sha256:ef091fb74ea27b9376c00d232900b5192f73018823625aa02ad46dc9ac27a5a0",
+      "source_url": "https://www.ahrq.gov/health-literacy/improve/precautions/toolkit.html",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "ahrq-health-literacy/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "cdc-clear-communication",
+      "title": "CDC Clear Communication Index - User Guide",
+      "issuer": "Centers for Disease Control and Prevention",
+      "version": "2019",
+      "status": "governing",
+      "topics": [
+        "communication",
+        "health_literacy",
+        "clarity"
+      ],
+      "governing_for": [
+        "communication_clarity"
+      ],
+      "sections": [
+        {
+          "anchor": "index",
+          "label": "Clear Communication Index criteria",
+          "topic": "clarity"
+        }
+      ],
+      "content_hash": "sha256:a0bc0422f1b1ec4878dc28d92feca1dd7434b4e1817ece6a31ebfb8ef3c30163",
+      "source_url": "https://stacks.cdc.gov/view/cdc/103706",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "cdc-clear-communication/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "dga-2026",
+      "title": "Dietary Guidelines for Americans, 2025-2030 (10th Edition)",
+      "issuer": "USDA / HHS",
+      "version": "2025-2030",
+      "status": "governing",
+      "topics": [
+        "nutrition",
+        "diet",
+        "added_sugars",
+        "alcohol",
+        "sodium",
+        "healthy_eating"
+      ],
+      "governing_for": [
+        "dietary_pattern",
+        "added_sugars",
+        "alcohol_exclusion_groups",
+        "numeric_dietary_target",
+        "sodium_intake"
+      ],
+      "sections": [
+        {
+          "anchor": "alcohol",
+          "label": "Limit Alcoholic Beverages",
+          "topic": "alcohol"
+        },
+        {
+          "anchor": "added-sugars",
+          "label": "Added sugars",
+          "topic": "added_sugars"
+        },
+        {
+          "anchor": "patterns",
+          "label": "Healthy dietary patterns",
+          "topic": "nutrition"
+        }
+      ],
+      "content_hash": "sha256:8c09818fa06652673522a7594955fbdd4434d3164dc24cddaa2c60867d9ea7f0",
+      "source_url": "https://www.dietaryguidelines.gov/",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "dga-2026/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "hhs-physical-activity",
+      "title": "Physical Activity Guidelines for Americans, 2nd Edition",
+      "issuer": "U.S. Department of Health and Human Services",
+      "version": "2nd ed. (2018)",
+      "status": "governing",
+      "topics": [
+        "physical_activity",
+        "exercise",
+        "aerobic",
+        "strength",
+        "sedentary"
+      ],
+      "governing_for": [
+        "physical_activity_dose",
+        "muscle_strengthening",
+        "sedentary_behavior"
+      ],
+      "sections": [
+        {
+          "anchor": "adult-dose",
+          "label": "Adult activity dose (150-300 min/wk)",
+          "topic": "physical_activity"
+        },
+        {
+          "anchor": "strengthening",
+          "label": "Muscle strengthening (2 days/wk)",
+          "topic": "strength"
+        },
+        {
+          "anchor": "older-adults",
+          "label": "Older adults",
+          "topic": "physical_activity"
+        }
+      ],
+      "content_hash": "sha256:e68706bd566402411c7ac72a2d9eb6cabcf5817b7d514c6b7f67ea0eae9d818c",
+      "source_url": "https://odphp.health.gov/sites/default/files/2019-09/Physical_Activity_Guidelines_2nd_edition.pdf",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "hhs-physical-activity/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "medlineplus-evaluating",
+      "title": "Evaluating Health Information",
+      "issuer": "MedlinePlus / U.S. National Library of Medicine",
+      "version": "current",
+      "status": "context",
+      "topics": [
+        "source_evaluation",
+        "health_information"
+      ],
+      "governing_for": [
+        "health_information_quality"
+      ],
+      "sections": [
+        {
+          "anchor": "criteria",
+          "label": "Evaluating health info criteria",
+          "topic": "source_evaluation"
+        }
+      ],
+      "content_hash": "sha256:93c04c649abe0bbb55a5a027649653cca75300a3f470b8daee083745d6c20030",
+      "source_url": "https://medlineplus.gov/evaluatinghealthinformation.html",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "medlineplus-evaluating/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "medlineplus-links",
+      "title": "Guidelines for Links",
+      "issuer": "MedlinePlus / U.S. National Library of Medicine",
+      "version": "current",
+      "status": "context",
+      "topics": [
+        "source_evaluation",
+        "links",
+        "external_resources"
+      ],
+      "governing_for": [
+        "external_link_selection"
+      ],
+      "sections": [
+        {
+          "anchor": "criteria",
+          "label": "Link selection criteria",
+          "topic": "links"
+        }
+      ],
+      "content_hash": "sha256:8d23eccef2ec123943d0505b9067350db2372947e9ede97a7c71152cb6bac37e",
+      "source_url": "https://medlineplus.gov/about/using/criteria/",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "medlineplus-links/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "nutrition-code-of-ethics",
+      "title": "Code of Ethics for the Nutrition and Dietetics Profession",
+      "issuer": "Academy of Nutrition and Dietetics / CDR",
+      "version": "2018",
+      "status": "governing",
+      "topics": [
+        "ethics",
+        "dietetics",
+        "professional_standards"
+      ],
+      "governing_for": [
+        "dietetics_ethics"
+      ],
+      "sections": [
+        {
+          "anchor": "ethics",
+          "label": "Code of Ethics principles",
+          "topic": "ethics"
+        }
+      ],
+      "content_hash": "sha256:b5d45dffbf52d8dbefbc00e5b6d4e9fbaff0f6a0a7a6a7d23c0ecd3fb45fddc4",
+      "source_url": "https://www.eatrightpro.org/practice/code-of-ethics/code-of-ethics-for-the-nutrition-and-dietetics-profession",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "nutrition-code-of-ethics/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "rdn-scope-standards",
+      "title": "Revised 2024 Scope and Standards of Practice for the RDN",
+      "issuer": "Commission on Dietetic Registration",
+      "version": "2024",
+      "status": "governing",
+      "topics": [
+        "scope_of_practice",
+        "dietetics",
+        "professional_standards"
+      ],
+      "governing_for": [
+        "rdn_scope_of_practice"
+      ],
+      "sections": [
+        {
+          "anchor": "scope",
+          "label": "Scope of practice",
+          "topic": "scope_of_practice"
+        }
+      ],
+      "content_hash": "sha256:b3f44e5c27268f3eacd8812f88b3f09a40346fa7cc3909264700f55dfdf641f7",
+      "source_url": "https://www.cdrnet.org/scope",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "rdn-scope-standards/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "samhsa-988",
+      "title": "988 Suicide & Crisis Lifeline - Key Messages",
+      "issuer": "Substance Abuse and Mental Health Services Administration (SAMHSA)",
+      "version": "current",
+      "status": "governing",
+      "topics": [
+        "mental_health",
+        "crisis",
+        "suicide",
+        "988"
+      ],
+      "governing_for": [
+        "crisis_resource_messaging"
+      ],
+      "sections": [
+        {
+          "anchor": "988",
+          "label": "988 access & messaging",
+          "topic": "crisis"
+        }
+      ],
+      "content_hash": "sha256:b56a7edb13c31c8562bca0ca784ad90d3264faba0e871aeb6ed301a62cb59110",
+      "source_url": "https://www.samhsa.gov/resource/988/988-key-messages",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "samhsa-988/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "sg-social-connection",
+      "title": "Our Epidemic of Loneliness and Isolation: U.S. Surgeon General's Advisory on Social Connection",
+      "issuer": "Office of the U.S. Surgeon General / HHS",
+      "version": "2023",
+      "status": "governing",
+      "topics": [
+        "social_connection",
+        "loneliness",
+        "isolation",
+        "community",
+        "workplace"
+      ],
+      "governing_for": [
+        "social_connection",
+        "loneliness_isolation"
+      ],
+      "sections": [
+        {
+          "anchor": "evidence",
+          "label": "Health effects of connection",
+          "topic": "social_connection"
+        },
+        {
+          "anchor": "workplace",
+          "label": "Workplace recommendations",
+          "topic": "workplace"
+        }
+      ],
+      "content_hash": "sha256:117ce522b88d31d6fddc9616e5829e7d1631638c3b39774ce52e8391795685d0",
+      "source_url": "https://www.hhs.gov/sites/default/files/surgeon-general-social-connection-advisory.pdf",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "sg-social-connection/source.txt",
+        "pdf": null
+      }
+    },
+    {
+      "doc_id": "who-glp1",
+      "title": "WHO Guideline on the Use of GLP-1 Therapies for the Treatment of Obesity in Adults",
+      "issuer": "World Health Organization",
+      "version": "2025",
+      "status": "governing",
+      "topics": [
+        "glp1",
+        "obesity",
+        "medication",
+        "weight_management"
+      ],
+      "governing_for": [
+        "glp1_therapy",
+        "obesity_pharmacotherapy_boundary"
+      ],
+      "sections": [
+        {
+          "anchor": "scope",
+          "label": "Comprehensive obesity care",
+          "topic": "obesity"
+        },
+        {
+          "anchor": "glp1",
+          "label": "GLP-1 therapy considerations",
+          "topic": "glp1"
+        }
+      ],
+      "content_hash": "sha256:22de1b5eddbd0be32ff879fb924a891d9abbbfe6db5f165d81c578cb8bcef3e8",
+      "source_url": "https://www.who.int/publications/i/item/9789240119712",
+      "retrieved_at": "2026-08-26",
+      "paths": {
+        "text": "who-glp1/source.txt",
+        "pdf": null
+      }
+    }
+  ]
+}

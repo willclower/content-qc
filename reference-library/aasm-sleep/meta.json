@@ -1,0 +1,25 @@
+{
+  "doc_id": "aasm-sleep",
+  "title": "Recommended Amount of Sleep for a Healthy Adult: AASM/SRS Joint Consensus Statement",
+  "issuer": "American Academy of Sleep Medicine / Sleep Research Society",
+  "version": "2015",
+  "edition_date": "2015",
+  "source_url": "https://www.aasm.org/resources/pdf/adultsleepdurationconsensus.pdf",
+  "retrieved_at": "2026-08-26",
+  "status": "governing",
+  "topics": [
+    "sleep",
+    "sleep_duration"
+  ],
+  "governing_for": [
+    "sleep_duration"
+  ],
+  "sections": [
+    {
+      "anchor": "duration",
+      "label": "Adult sleep duration (7+ hrs)",
+      "topic": "sleep_duration"
+    }
+  ],
+  "content_hash": "sha256:26907ee10ae6e9435cab294496ca6d011672a5b239c696e7345b090e4607eaad"
+}

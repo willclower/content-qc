@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedWell QC · First-Pass Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fbfaf6; --ink:#1e2d35; --muted:#5c6b72;
+  --line:#e2ddd0; --brand:#1a6882; --brand-2:#29a4c4; --brand-tint:#eaf6fa;
+  --err:#b3261e; --warn:#b7791f; --flag:#4a5e66; --ok:#3f7a34;
+  --radius:12px; --shadow:0 1px 3px rgba(30,45,53,.08),0 8px 24px rgba(30,45,53,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55}
+a{color:var(--brand)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);background:#faf8f2;position:sticky;top:0;z-index:20}
+.brand{font-weight:600;font-size:16px;letter-spacing:.2px}
+.brand b{color:var(--brand-2)}
+.linkbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:inherit;color:var(--brand);cursor:pointer}
+.linkbtn:hover{background:var(--brand-tint);border-color:var(--brand-2)}
+.wrap{max-width:900px;margin:0 auto;padding:36px 24px 80px}
+.eyebrow{display:inline-block;border:1px solid var(--brand-2);color:var(--brand);border-radius:999px;padding:5px 14px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
+h1{font-family:Fraunces,serif;font-weight:400;font-size:40px;margin:18px 0 8px;line-height:1.1}
+h1 em{color:var(--brand);font-style:italic}
+.sub{color:var(--muted);max-width:60ch;margin:0 0 28px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.row .fld{flex:1;min-width:220px}
+input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(26,104,130,.15)}
+textarea{min-height:280px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.5}
+.hint{color:var(--muted);font-size:12px;margin:4px 0 0}
+.actions{display:flex;align-items:center;gap:14px;margin-top:18px}
+.btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:12px 22px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:#155470}
+.btn:disabled{opacity:.55;cursor:default}
+.status{color:var(--muted);font-size:13px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* review */
+#review{margin-top:34px;display:none}
+.rvhead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.rvtitle{font-family:Fraunces,serif;font-size:24px}
+.rvmeta{color:var(--muted);font-size:12px;margin-top:4px}
+.scorebox{text-align:center;min-width:118px;border-radius:12px;padding:14px 10px;color:#fff}
+.scorebox .n{font-family:Fraunces,serif;font-size:38px;line-height:1}
+.scorebox .l{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.95;margin-top:4px}
+.s1{background:#3f7a34}.s2{background:#6b8e23}.s3{background:#b7791f}.s4{background:#c05621}.s5{background:#b3261e}
+.banner{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px}
+.banner.elevated{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00}
+.banner.scope{background:#fdeaea;border:1px solid #e6a6a6;color:#8a1c1c}
+.banner.clean{background:#eef7ea;border:1px solid #bfe0b0;color:#2f6a24}
+.pill{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:12px;margin:3px 4px 0 0}
+.pill.trig{background:#fff4e5;border-color:#f0c887;color:#8a5a00;font-weight:500}
+.sect{margin-top:22px}
+.sect h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 10px;font-weight:600}
+.finding{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.finding.error{border-left-color:var(--err)}
+.finding.warning{border-left-color:var(--warn)}
+.finding.flag{border-left-color:var(--flag)}
+.tier{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:5px;margin-right:8px}
+.tier.error{background:#fdeaea;color:var(--err)}
+.tier.warning{background:#fdf3e2;color:var(--warn)}
+.tier.flag{background:#eef1f2;color:var(--flag)}
+.fclaim{font-weight:500}
+.floc{color:var(--muted);font-size:12px;margin-left:6px}
+.fref{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.fref b{color:var(--ink);font-weight:600}
+.fedit{font-size:13px;margin-top:8px;color:#2f4a52}
+.fedit b{color:var(--brand)}
+.gap{font-size:13px;color:var(--muted);padding:8px 0;border-bottom:1px dashed var(--line)}
+.gap b{color:var(--ink)}
+.reflist{font-size:12px;color:var(--muted)}
+.reflist code{background:#f0ece2;padding:1px 6px;border-radius:4px}
+.err-toast{background:#fdeaea;border:1px solid #e6a6a6;color:#8a1c1c;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;display:none}
+.draftnote{font-size:12px;color:var(--muted);margin-top:24px;font-style:italic;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">MedWell <b>QC</b> · First-Pass Review</div>
+  <button class="linkbtn" onclick="location.href='reference-library-index.html'">Manage reference library →</button>
+</div>
+
+<div class="wrap">
+  <span class="eyebrow">Component B · AI First Pass · Draft-only</span>
+  <h1>Review a piece of <em>content</em></h1>
+  <p class="sub">Paste content below. The first pass identifies which governing references apply, reads them whole, and returns a scored, source-cited draft review for the RD. It is advisory — never an approval.</p>
+
+  <div class="panel">
+    <div class="row">
+      <div class="fld"><label for="cid">Content ID</label>
+        <input type="text" id="cid" placeholder="brain-health-webinar">
+        <p class="hint">Stable slug for this piece. Re-running the same ID + version overwrites its review.</p></div>
+      <div class="fld"><label for="cver">Version <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <input type="text" id="cver" placeholder="auto: today-r1">
+        <p class="hint">Leave blank to auto-stamp today's date.</p></div>
+    </div>
+    <div style="margin-top:14px">
+      <label for="ctitle">Title <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <input type="text" id="ctitle" placeholder="Brain Health Webinar">
+    </div>
+    <div style="margin-top:14px">
+      <label for="ctext">Content</label>
+      <textarea id="ctext" placeholder="Paste the full script / article / webinar text here…"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn" id="runbtn" onclick="runQC()">Run QC review</button>
+      <span class="status" id="stat"></span>
+    </div>
+    <div class="err-toast" id="errtoast"></div>
+  </div>
+
+  <div id="review"></div>
+</div>
+
+<script>
+const QC_ENDPOINT = "https://n8n-admin.willclower.com/webhook/qc-first-pass";
+const SCORE_LABEL = {1:"Ship-ready",2:"Minor revision",3:"Substantive revision",4:"Rework",5:"Pull & rewrite"};
+const TRIG_LABEL = {
+  numeric_dietary_target:"Numeric dietary target", weight_eating_behavior:"Weight / eating behavior",
+  named_condition:"Named condition", medication_adjacent:"Medication-adjacent", mental_health:"Mental health"};
+
+function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+async function runQC(){
+  const cid=document.getElementById('cid').value.trim();
+  const text=document.getElementById('ctext').value.trim();
+  const et=document.getElementById('errtoast'); et.style.display='none';
+  if(!cid){return toast('Content ID is required.');}
+  if(!text){return toast('Paste some content to review.');}
+  const btn=document.getElementById('runbtn'), stat=document.getElementById('stat');
+  btn.disabled=true; stat.innerHTML='<span class="spin"></span>Detecting domains, loading references, reviewing…';
+  document.getElementById('review').style.display='none';
+  try{
+    const r=await fetch(QC_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({content_id:cid, content_version:document.getElementById('cver').value.trim(),
+        content_title:document.getElementById('ctitle').value.trim(), content:text})});
+    if(!r.ok) throw new Error('Server returned '+r.status);
+    const data=await r.json();
+    if(!data.ok) throw new Error(data.error||'Review failed.');
+    render(data.review, data.review_id);
+    stat.textContent='';
+  }catch(e){ toast('Could not complete the review: '+e.message); stat.textContent=''; }
+  finally{ btn.disabled=false; }
+}
+function toast(m){const et=document.getElementById('errtoast');et.textContent=m;et.style.display='block';}
+
+function render(rv, review_id){
+  const el=document.getElementById('review');
+  const sc=rv.score||1;
+  const findings=rv.findings||[];
+  const errs=findings.filter(f=>f.tier==='error'), warns=findings.filter(f=>f.tier==='warning'), flags=findings.filter(f=>f.tier==='flag');
+  const trigs=rv.elevated_review_triggers||[];
+  const gaps=rv.coverage_gaps||[];
+  const refs=rv.references_consulted||[];
+
+  let banners='';
+  if(rv.in_scope===false){banners+=`<div class="banner scope"><b>Out of scope.</b> ${esc(rv.scope_note||'Content strays outside general lifestyle-health guidance; not scored.')}</div>`;}
+  if(trigs.length){banners+=`<div class="banner elevated"><b>Must reach the RD.</b> This content hits elevated-review categories regardless of score: ${trigs.map(t=>'<span class="pill trig">'+esc(TRIG_LABEL[t]||t)+'</span>').join('')}</div>`;}
+  if(!errs.length && !warns.length && rv.in_scope!==false){banners+=`<div class="banner clean"><b>No errors or warnings.</b> Draft is clean at the error/warning level; any items below are flags.</div>`;}
+
+  const fhtml=f=>`<div class="finding ${esc(f.tier)}">
+     <div><span class="tier ${esc(f.tier)}">${esc(f.tier)}</span><span class="fclaim">${esc(f.claim)}</span>${f.location?`<span class="floc">· ${esc(f.location)}</span>`:''}</div>
+     ${f.reference&&(f.reference.doc_id||f.reference.note)?`<div class="fref">${f.reference.doc_id?`<b>${esc(f.reference.doc_id)}</b>${f.reference.version?` (${esc(f.reference.version)})`:''} — `:''}${esc(f.reference.note||'')}</div>`:''}
+     ${f.suggested_edit?`<div class="fedit"><b>Suggested edit:</b> ${esc(f.suggested_edit)}</div>`:''}
+   </div>`;
+
+  el.innerHTML=`
+   <div class="panel">
+     <div class="rvhead">
+       <div>
+         <div class="rvtitle">${esc(rv.content_title||rv.content_id)}</div>
+         <div class="rvmeta">${esc(rv.content_id)} · ${esc(rv.content_version)} · reviewed ${esc((rv.reviewed_at||'').slice(0,10))} · ${esc(rv.model||'')} · status <b>${esc(rv.status||'pending_rd')}</b>${review_id?` · id ${esc(review_id).slice(0,8)}`:''}</div>
+       </div>
+       <div class="scorebox s${sc}"><div class="n">${sc}</div><div class="l">${esc(SCORE_LABEL[sc]||'')}</div></div>
+     </div>
+     ${banners}
+     ${rv.score_rationale?`<p style="color:var(--muted);font-size:14px;margin:0 0 4px">${esc(rv.score_rationale)}</p>`:''}
+     ${errs.length?`<div class="sect"><h3>Errors (${errs.length})</h3>${errs.map(fhtml).join('')}</div>`:''}
+     ${warns.length?`<div class="sect"><h3>Warnings (${warns.length})</h3>${warns.map(fhtml).join('')}</div>`:''}
+     ${flags.length?`<div class="sect"><h3>Flags (${flags.length})</h3>${flags.map(fhtml).join('')}</div>`:''}
+     ${gaps.length?`<div class="sect"><h3>Coverage gaps (${gaps.length})</h3>${gaps.map(g=>`<div class="gap"><b>${esc(g.claim_domain)}</b> — ${esc(g.note)}</div>`).join('')}</div>`:''}
+     <div class="sect"><h3>References consulted (${refs.length})</h3>
+       <div class="reflist">${refs.length?refs.map(r=>`<code>${esc(r.doc_id)}</code> ${esc(r.version||'')} `).join(' · '):'None routed.'}</div></div>
+     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. This is a draft. Approval requires two human sign-offs (RD → founder); nothing here constitutes approval.</div>
+   </div>`;
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+</body>
+</html>

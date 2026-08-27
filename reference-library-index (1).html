@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QC Reference Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1b2a4a; --blue:#2f6fb0; --orange:#e08a1e;
+    --bg:#f7f6f2; --card:#ffffff; --ink:#2a2f38; --muted:#6b7480;
+    --line:#e6e3da; --ok:#1f7a52; --warn:#b8811a; --err:#b0402e;
+    --gov:#1f7a52; --ctx:#6b7480; --sup:#b0402e;
+    --radius:14px; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;border-bottom:1px solid var(--line);background:#fbfaf7;position:sticky;top:0;z-index:20}
+  .brand{font-weight:600;color:var(--navy);font-size:15px}
+  .brand .qc{color:var(--blue)}
+  .conn{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#c8c2b4}
+  .dot.on{background:var(--ok)}
+  .btn{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line);
+    background:#fff;color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+  .btn:hover{border-color:var(--blue);color:var(--blue)}
+  .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .btn.primary:hover{background:#255d94;color:#fff}
+  .btn.danger:hover{border-color:var(--err);color:var(--err)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:40px 28px 80px}
+  .kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--blue);font-weight:600;border:1px solid var(--line);border-radius:999px;
+    padding:5px 13px;margin-bottom:18px;background:#fff}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:400;color:var(--navy);
+    font-size:40px;line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
+  h1 .accent{font-style:italic;font-weight:500;color:var(--blue)}
+  .lede{color:var(--muted);font-size:15px;max-width:60ch;margin:0 0 30px}
+
+  .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+  .search{flex:1;min-width:240px;position:relative}
+  .search input{width:100%;font:inherit;font-size:14px;padding:11px 14px 11px 38px;
+    border:1px solid var(--line);border-radius:10px;background:#fff}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,111,176,.12)}
+  .search svg{position:absolute;left:12px;top:11px;color:var(--muted)}
+  select{font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+
+  .count{font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .doc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+  .doc:hover{border-color:#cfd6de}
+  .doc .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .doc .title{font-family:'Fraunces',serif;font-size:16px;color:var(--navy);line-height:1.2;font-weight:600}
+  .doc .issuer{font-size:12px;color:var(--muted);margin-top:2px}
+  .pill{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .pill.governing{background:#e7f2ec;color:var(--gov)}
+  .pill.context{background:#eef0f2;color:var(--ctx)}
+  .pill.superseded{background:#f6e9e6;color:var(--sup)}
+  .meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .meta b{color:var(--ink);font-weight:500}
+  .domains{display:flex;gap:6px;flex-wrap:wrap}
+  .domain{font-family:var(--mono);font-size:10.5px;background:#f2efe8;color:#5a6673;
+    padding:2px 7px;border-radius:6px}
+  .doc .foot{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+  .doc .foot .btn{font-size:12px;padding:6px 11px}
+
+  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(27,42,74,.32);display:none;
+    align-items:flex-start;justify-content:center;padding:48px 20px;z-index:40;overflow:auto}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:760px;width:100%;padding:28px 30px;
+    box-shadow:0 20px 60px rgba(27,42,74,.22)}
+  .modal h2{font-family:'Fraunces',serif;font-weight:500;color:var(--navy);margin:0 0 4px;font-size:24px}
+  .modal .sub{font-size:13px;color:var(--muted);margin:0 0 20px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .field .hint{font-weight:400;color:var(--muted)}
+  .field input,.field textarea,.field select{width:100%;font:inherit;font-size:13.5px;
+    padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  .field textarea{min-height:120px;resize:vertical;font-family:var(--mono);font-size:12.5px}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(47,111,176,.12)}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .close{float:right;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;border:none;background:none}
+  .doctext{font-family:var(--mono);font-size:12px;white-space:pre-wrap;background:#faf9f5;
+    border:1px solid var(--line);border-radius:10px;padding:16px;max-height:50vh;overflow:auto;color:#3a424c}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;font-size:13px;margin-bottom:18px}
+  .kv .k{color:var(--muted)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);
+    color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:60;opacity:0;
+    transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .toast.err{background:var(--err)}
+  .banner{background:#fff6e6;border:1px solid #f0dcae;color:#7a5a12;font-size:12.5px;
+    padding:10px 14px;border-radius:10px;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">MedWell <span class="qc">QC</span> · Reference Library</div>
+  <div class="conn">
+    <button class="btn primary" id="addBtn">Add reference</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <span class="kicker">Component A · Canonical guidance corpus</span>
+  <h1>The <span class="accent">reference library</span></h1>
+  <p class="lede">The versioned guidance the first-pass QC review is measured against. Each reference is read whole; tags decide which references govern a given claim. This is the single source both the QC pass and this search read from.</p>
+
+  <div class="controls">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Search title, issuer, topic, claim-domain…">
+    </div>
+    <select id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="governing">Governing</option>
+      <option value="context">Context</option>
+      <option value="superseded">Superseded</option>
+    </select>
+    <select id="topicFilter"><option value="">All topics</option></select>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No references match.</div>
+</div>
+
+<!-- View modal -->
+<div class="overlay" id="viewOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeModal('viewOverlay')">&times;</button>
+    <h2 id="vTitle"></h2>
+    <p class="sub" id="vIssuer"></p>
+    <div class="kv" id="vKv"></div>
+    <div id="vText"></div>
+  </div>
+</div>
+
+<!-- Add/edit modal -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeModal('addOverlay')">&times;</button>
+    <h2 id="aHeading">Add reference</h2>
+    <p class="sub">Saved to the reference library. Re-saving an existing doc_id supersedes the prior version; the content hash is computed on save.</p>
+    <div class="field"><label>doc_id <span class="hint">— stable slug, immutable (e.g. aha-hypertension)</span></label><input id="aId" placeholder="aha-hypertension"></div>
+    <div class="field"><label>Title</label><input id="aTitle"></div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>Issuer</label><input id="aIssuer"></div>
+      <div><label>Version</label><input id="aVersion" placeholder="2025"></div>
+    </div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>Status</label><select id="aStatus"><option>governing</option><option>context</option><option>superseded</option></select></div>
+      <div><label>Source URL</label><input id="aUrl"></div>
+    </div>
+    <div class="field"><label>Topics <span class="hint">— comma-separated</span></label><input id="aTopics" placeholder="hypertension, alcohol, blood_pressure"></div>
+    <div class="field"><label>Governing for <span class="hint">— claim-domains this doc owns, comma-separated</span></label><input id="aGov" placeholder="alcohol_limits, blood_pressure_thresholds"></div>
+    <div class="field"><label>Full reference text <span class="hint">— extracted plain text; the QC pass reads this whole</span></label><textarea id="aText" placeholder="Paste the full extracted text of the guideline…"></textarea></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('addOverlay')">Cancel</button>
+      <button class="btn primary" id="aSave">Save reference</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- config ---------------------------------------------------------------
+   Front end talks only to n8n webhooks (browser <-> n8n, like Nona). No token.
+   Read  -> qc-reference-read   (list | search | route)
+   Write -> qc-reference-write  (upsert | delete)
+   Store is Postgres; content lives server-side. Moving to the site server later
+   changes only HOST, nothing else.                                           */
+const HOST  = "https://n8n-admin.willclower.com/webhook";
+const READ  = `${HOST}/qc-reference-read`;
+const WRITE = `${HOST}/qc-reference-write`;
+
+let DOCS = [];      // current corpus (from list)
+let editingId = null;
+
+async function postJSON(url, body){
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+/* ---- load -----------------------------------------------------------------*/
+async function loadIndex(){
+  try{
+    const res = await postJSON(READ, {mode:'list'});
+    DOCS = (res.docs||[]);
+  }catch(e){ DOCS=[]; toast("Couldn't load the library.", true); }
+  populateTopics();
+  render();
+}
+
+function populateTopics(){
+  const sel = document.getElementById('topicFilter');
+  sel.querySelectorAll('option:not([value=""])').forEach(o=>o.remove());
+  const topics = [...new Set(DOCS.flatMap(d=>d.topics||[]))].sort();
+  topics.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+}
+
+/* ---- filter + render (client-side over the loaded list) -------------------*/
+function render(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const st = document.getElementById('statusFilter').value;
+  const tp = document.getElementById('topicFilter').value;
+  const filtered = DOCS.filter(d=>{
+    if(st && d.status!==st) return false;
+    if(tp && !(d.topics||[]).includes(tp)) return false;
+    if(q){
+      const hay = [d.title,d.issuer,...(d.topics||[]),...(d.governing_for||[]),
+        ...((d.sections||[]).map(s=>s.label||''))].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const grid=document.getElementById('grid'), empty=document.getElementById('empty');
+  document.getElementById('count').textContent = `${filtered.length} of ${DOCS.length} references`;
+  grid.innerHTML='';
+  empty.style.display = filtered.length?'none':'block';
+  filtered.forEach(d=>grid.appendChild(card(d)));
+}
+
+function card(d){
+  const el=document.createElement('div'); el.className='doc';
+  const govs=(d.governing_for||[]).map(g=>`<span class="domain">${esc(g)}</span>`).join('');
+  el.innerHTML=`
+    <div class="row1">
+      <div><div class="title">${esc(d.title)}</div><div class="issuer">${esc(d.issuer||'')}</div></div>
+      <span class="pill ${esc(d.status)}">${esc(d.status)}</span>
+    </div>
+    <div class="meta"><span>Version <b>${esc(d.version||'—')}</b></span>
+      <span>Retrieved <b>${esc(d.retrieved_at||'—')}</b></span></div>
+    ${govs?`<div class="domains">${govs}</div>`:''}
+    <div class="foot">
+      <button class="btn" data-act="view">View text</button>
+      <button class="btn" data-act="edit">Edit</button>
+      <button class="btn danger" data-act="del">Remove</button>
+    </div>`;
+  el.querySelector('[data-act=view]').onclick=()=>viewDoc(d);
+  el.querySelector('[data-act=edit]').onclick=()=>openAdd(d);
+  el.querySelector('[data-act=del]').onclick=()=>delDoc(d);
+  return el;
+}
+
+/* ---- view (fetches body_text via a single-doc list call) -----------------*/
+async function viewDoc(d){
+  document.getElementById('vTitle').textContent=d.title;
+  document.getElementById('vIssuer').textContent=d.issuer||'';
+  document.getElementById('vKv').innerHTML=`
+    <div class="k">doc_id</div><div><code>${esc(d.doc_id)}</code></div>
+    <div class="k">Status</div><div>${esc(d.status)}</div>
+    <div class="k">Version</div><div>${esc(d.version||'—')}</div>
+    <div class="k">Governs</div><div>${esc((d.governing_for||[]).join(', ')||'—')}</div>
+    <div class="k">Source</div><div>${d.source_url?`<a href="${esc(d.source_url)}" target="_blank" rel="noopener">${esc(d.source_url)}</a>`:'—'}</div>
+    <div class="k">Hash</div><div><code style="font-size:11px">${esc(d.content_hash||'—')}</code></div>`;
+  const vt=document.getElementById('vText'); vt.innerHTML='<div class="doctext">Loading text…</div>';
+  openModal('viewOverlay');
+  try{
+    const res = await postJSON(READ, {mode:'list', doc_id:d.doc_id});
+    const full = (res.docs||[]).find(x=>x.doc_id===d.doc_id);
+    vt.innerHTML=`<div class="doctext">${esc(full && full.body_text ? full.body_text : '(no text stored)')}</div>`;
+  }catch(e){ vt.innerHTML='<div class="doctext">Could not load the text.</div>'; }
+}
+
+/* ---- add / edit -----------------------------------------------------------*/
+document.getElementById('addBtn').onclick=()=>openAdd(null);
+
+async function openAdd(d){
+  editingId = d ? d.doc_id : null;
+  document.getElementById('aHeading').textContent = d?'Edit reference':'Add reference';
+  const g=id=>document.getElementById(id);
+  g('aId').value=d?d.doc_id:''; g('aId').disabled=!!d;   // doc_id immutable on edit
+  g('aTitle').value=d?d.title:''; g('aIssuer').value=d?(d.issuer||''):''; g('aVersion').value=d?(d.version||''):'';
+  g('aStatus').value=d?d.status:'governing'; g('aUrl').value=d?(d.source_url||''):'';
+  g('aTopics').value=d?(d.topics||[]).join(', '):''; g('aGov').value=d?(d.governing_for||[]).join(', '):'';
+  g('aText').value='';
+  if(d){
+    try{ const res=await postJSON(READ,{mode:'list',doc_id:d.doc_id});
+      const full=(res.docs||[]).find(x=>x.doc_id===d.doc_id);
+      g('aText').value=full&&full.body_text?full.body_text:''; }catch(_){}
+  }
+  openModal('addOverlay');
+}
+
+document.getElementById('aSave').onclick=async()=>{
+  const g=id=>document.getElementById(id).value.trim();
+  const doc_id=g('aId'); const text=document.getElementById('aText').value;
+  if(!doc_id||!g('aTitle')||!text){ toast("doc_id, title, and text are required.",true); return; }
+  const payload={
+    action:'upsert', doc_id,
+    title:g('aTitle'), issuer:g('aIssuer'), version:g('aVersion'),
+    source_url:g('aUrl'), status:g('aStatus'),
+    topics:splitList(g('aTopics')), governing_for:splitList(g('aGov')),
+    text
+  };
+  const btn=document.getElementById('aSave'); btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const res=await postJSON(WRITE, payload);
+    if(res.blocked){ toast(res.error||'Blocked: governing-domain conflict.', true); }
+    else{ toast("Saved."); closeModal('addOverlay'); await loadIndex(); }
+  }catch(e){ toast("Save failed: "+e.message, true); }
+  finally{ btn.disabled=false; btn.textContent='Save reference'; }
+};
+
+async function delDoc(d){
+  if(!confirm(`Remove "${d.title}"?\nIt will be marked superseded (kept for audit), not hard-deleted.`)) return;
+  try{
+    const res=await postJSON(WRITE, {action:'delete', doc_id:d.doc_id});
+    if(res.ok){ toast("Removed."); await loadIndex(); }
+    else toast(res.error||"Remove failed.", true);
+  }catch(e){ toast("Remove failed: "+e.message, true); }
+}
+
+/* ---- utils ----------------------------------------------------------------*/
+function splitList(s){return s?s.split(',').map(x=>x.trim()).filter(Boolean):[];}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+let toastT;
+function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(err?' err':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',2800);}
+
+['q','statusFilter','topicFilter'].forEach(id=>
+  document.getElementById(id).addEventListener('input',render));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'))});
+
+loadIndex();
+</script>
+</body>
+</html>

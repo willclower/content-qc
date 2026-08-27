@@ -90,6 +90,27 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .draftnote{font-size:12px;color:var(--muted);margin-top:24px;font-style:italic;border-top:1px solid var(--line);padding-top:14px}
 .trail{margin-top:18px;font-size:12px;color:var(--muted)}
 .trail .ev{padding:4px 0;border-bottom:1px dashed var(--line)}
+.dispo{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.dispo .dbtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.dbtn{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:6px 12px;cursor:pointer}
+.dbtn:hover{border-color:var(--brand-2)}
+.dbtn.on-accept{background:#eef7ea;border-color:#8fce7a;color:#2f6a24}
+.dbtn.on-edit{background:var(--brand-tint);border-color:var(--brand-2);color:var(--brand)}
+.dbtn.on-reject{background:#f1eee9;border-color:#c9c2b4;color:var(--muted)}
+.dedit{width:100%;font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:64px;resize:vertical;margin-bottom:6px}
+.dnote{width:100%;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+.dstate{font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;padding:2px 8px;border-radius:5px;margin-left:8px}
+.dstate.accept{background:#eef7ea;color:#2f6a24}.dstate.edit{background:var(--brand-tint);color:var(--brand)}.dstate.reject{background:#f1eee9;color:var(--muted)}.dstate.none{background:#fdf3e2;color:var(--warn)}
+.omit{font-size:12px;color:var(--warn);margin-top:8px}
+.signbar{position:sticky;bottom:0;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px;margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.signbar .prog{font-size:13px;color:var(--muted);flex:1;min-width:160px}
+.signbar .prog b{color:var(--ink)}
+.signnote{flex:2;min-width:220px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.corrected{margin-top:22px}
+.diff{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:440px;overflow:auto}
+.diff ins{background:#dff3d4;text-decoration:none;border-radius:3px;padding:0 2px}
+.unplaced{margin-top:14px;background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:10px;padding:12px 16px;font-size:13px}
+.unplaced ul{margin:6px 0 0;padding-left:18px}
 .hidden{display:none}
 </style>
 </head>
@@ -155,6 +176,9 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 const HOST="https://n8n-admin.willclower.com/webhook";
 const QC_RUN=HOST+"/qc-first-pass";
 const QC_READ=HOST+"/qc-review-read";
+const QC_SIGNOFF=HOST+"/qc-signoff";
+const WHO={rita:{id:"Rita Madden",role:"rd"},will:{id:"Will Clower",role:"founder"}};
+let CURRENT=null; // {review_id, output, dispo:{finding_id:{decision,final_text,note,original_suggestion}}}
 const SCORE_LABEL={1:"Ship-ready",2:"Minor revision",3:"Substantive revision",4:"Rework",5:"Pull & rewrite"};
 const TRIG_LABEL={numeric_dietary_target:"Numeric dietary target",weight_eating_behavior:"Weight / eating behavior",
   named_condition:"Named condition",medication_adjacent:"Medication-adjacent",mental_health:"Mental health"};
@@ -211,7 +235,11 @@ async function openReview(review_id){
     const r=await fetch(QC_READ,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'get',review_id})});
     const d=await r.json();
     if(!d.ok) throw new Error(d.error||'Not found');
-    renderReview(d.review.output || d.review, d.review.review_id, d.signoffs||[]);
+    const rvobj = d.review.output || d.review;
+    // fold the row-level corrected_content column into the object for rendering
+    if(d.review.corrected_content!=null) rvobj.corrected_content=d.review.corrected_content;
+    if(rvobj.status==null && d.review.status) rvobj.status=d.review.status;
+    renderReview(rvobj, d.review.review_id, d.signoffs||[]);
   }catch(e){ document.getElementById('review').innerHTML=`<div class="err-toast" style="display:block">Could not open: ${esc(e.message)}</div>`; }
 }
 
@@ -238,25 +266,69 @@ async function runQC(){
 function toast(m){const et=document.getElementById('errtoast');et.textContent=m;et.style.display='block';}
 
 /* ---------- RENDER ONE REVIEW ---------- */
+function statusAllowsRD(status){ return status==='pending_rd' || status==='returned'; }
+
 function renderReview(rv, review_id, signoffs){
   const el=document.getElementById('review');
   const sc=rv.score||1;
   const findings=rv.findings||[];
   const errs=findings.filter(f=>f.tier==='error'),warns=findings.filter(f=>f.tier==='warning'),flags=findings.filter(f=>f.tier==='flag');
   const trigs=rv.elevated_review_triggers||[], gaps=rv.coverage_gaps||[], refs=rv.references_consulted||[];
+
+  const who=WHO[document.getElementById('whoami').value] || WHO.rita;
+  // RD dispositions only when it's an RD acting on a pending_rd/returned review.
+  const canDispose = who.role==='rd' && statusAllowsRD(rv.status||'pending_rd');
+
+  // (re)build CURRENT state
+  CURRENT = { review_id, output: rv, status: rv.status||'pending_rd', dispo:{} };
+  findings.forEach(f=>{ CURRENT.dispo[f.id] = { decision:null, final_text:null, note:null, original_suggestion:(f.suggested_edit??null) }; });
+
   let banners='';
   if(rv.in_scope===false) banners+=`<div class="banner scope"><b>Out of scope.</b> ${esc(rv.scope_note||'Not scored.')}</div>`;
   if(trigs.length) banners+=`<div class="banner elevated"><b>Must reach the RD.</b> Elevated categories: ${trigs.map(t=>'<span class="pill trig">'+esc(TRIG_LABEL[t]||t)+'</span>').join('')}</div>`;
   if(!errs.length&&!warns.length&&rv.in_scope!==false) banners+=`<div class="banner clean"><b>No errors or warnings.</b> Any items below are flags.</div>`;
+
+  const dispoHtml=f=>{
+    const isOmission = (f.anchor_text==null || f.anchor_text==='');
+    return `<div class="dispo" data-fid="${esc(f.id)}">
+      <div class="dbtns">
+        <button class="dbtn" data-act="accept" onclick="setDispo('${esc(f.id)}','accept')">Accept as is</button>
+        <button class="dbtn" data-act="edit" onclick="setDispo('${esc(f.id)}','edit')">Accept edits</button>
+        <button class="dbtn" data-act="reject" onclick="setDispo('${esc(f.id)}','reject')">Reject</button>
+        <span class="dstate none" data-state>Not set</span>
+      </div>
+      <textarea class="dedit hidden" data-edit placeholder="Edit the correction text, then it will be placed as written.">${esc(f.suggested_edit||'')}</textarea>
+      <input class="dnote" data-dnote type="text" placeholder="Note (optional)">
+      ${isOmission?`<div class="omit">Omission — no passage to swap. On accept, this is recorded for manual insertion (nothing is auto-placed).</div>`:''}
+    </div>`;
+  };
+
   const fhtml=f=>`<div class="finding ${esc(f.tier)}">
      <div><span class="tier ${esc(f.tier)}">${esc(f.tier)}</span><span class="fclaim">${esc(f.claim)}</span>${f.location?`<span class="floc">· ${esc(f.location)}</span>`:''}</div>
      ${f.reference&&(f.reference.doc_id||f.reference.note)?`<div class="fref">${f.reference.doc_id?`<b>${esc(f.reference.doc_id)}</b>${f.reference.version?` (${esc(f.reference.version)})`:''} — `:''}${esc(f.reference.note||'')}</div>`:''}
      ${f.suggested_edit?`<div class="fedit"><b>Suggested edit:</b> ${esc(f.suggested_edit)}</div>`:''}
+     ${canDispose?dispoHtml(f):''}
    </div>`;
+
   let trailHtml='';
   if(signoffs && signoffs.length){
     trailHtml=`<div class="trail"><b>Paper trail</b>${signoffs.map(s=>`<div class="ev">${esc((s.signed_at||'').slice(0,16).replace('T',' '))} — ${esc(s.reviewer_user_id)} (${esc(s.reviewer_role)}) · ${esc(s.decision)}${s.note?' · '+esc(s.note):''}</div>`).join('')}</div>`;
   }
+
+  // corrected doc, if one already exists on the stored review
+  let correctedHtml='';
+  if(rv.corrected_content || (CURRENT.output && CURRENT.output.corrected_content)){
+    const cc = rv.corrected_content || CURRENT.output.corrected_content;
+    correctedHtml = renderCorrected(rv.content_source||CURRENT.output.content_source||null, cc);
+  }
+
+  const signBar = canDispose ? `<div class="signbar">
+      <div class="prog" id="dprog">0 of ${findings.length} findings dispositioned.</div>
+      <input class="signnote" id="signnote" type="text" placeholder="Overall note (optional)">
+      <button class="btn ghost" onclick="submitSignoff('return')">Return for revision</button>
+      <button class="btn" id="signbtn" onclick="submitSignoff('approve')" disabled>Sign off &amp; assemble</button>
+    </div>` : '';
+
   el.innerHTML=`<div class="panel">
      <div class="rvhead">
        <div><div class="rvtitle">${esc(rv.content_title||rv.content_id)}</div>
@@ -271,9 +343,109 @@ function renderReview(rv, review_id, signoffs){
      ${gaps.length?`<div class="sect"><h3>Coverage gaps (${gaps.length})</h3>${gaps.map(g=>`<div class="gap"><b>${esc(g.claim_domain)}</b> — ${esc(g.note)}</div>`).join('')}</div>`:''}
      <div class="sect"><h3>References consulted (${refs.length})</h3><div class="reflist">${refs.length?refs.map(r=>`<code>${esc(r.doc_id)}</code> ${esc(r.version||'')}`).join(' · '):'None routed.'}</div></div>
      ${trailHtml}
-     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. Correcting and sign-off (Component C) come next. Approval requires two human sign-offs (RD → founder); nothing here constitutes approval.</div>
+     <div id="correctedbox">${correctedHtml}</div>
+     ${signBar}
+     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → founder); nothing here constitutes approval.</div>
    </div>`;
   el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- DISPOSITION STATE ---------- */
+function setDispo(fid, act){
+  const d=CURRENT.dispo[fid]; if(!d) return;
+  d.decision=act;
+  const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
+  if(box){
+    box.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('on-accept','on-edit','on-reject'));
+    const btn=box.querySelector(`.dbtn[data-act="${act}"]`); if(btn) btn.classList.add('on-'+act);
+    const edit=box.querySelector('[data-edit]');
+    edit.classList.toggle('hidden', act!=='edit');
+    const st=box.querySelector('[data-state]');
+    st.className='dstate '+act; st.textContent=act==='accept'?'Accept as is':act==='edit'?'Accept edits':'Reject';
+  }
+  refreshProgress();
+}
+function cssq(s){ return String(s).replace(/"/g,'\\"'); }
+function collectDispositions(){
+  const out=[]; let allSet=true;
+  for(const [fid,d] of Object.entries(CURRENT.dispo)){
+    if(!d.decision){ allSet=false; continue; }
+    const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
+    const noteEl=box?box.querySelector('[data-dnote]'):null;
+    const note=noteEl&&noteEl.value.trim()?noteEl.value.trim():null;
+    let final_text=null;
+    if(d.decision==='accept'){ final_text=d.original_suggestion; }
+    else if(d.decision==='edit'){ const e=box?box.querySelector('[data-edit]'):null; final_text=e?e.value:null; }
+    out.push({finding_id:fid, decision:d.decision, final_text, original_suggestion:d.original_suggestion, note});
+  }
+  return {list:out, allSet};
+}
+function refreshProgress(){
+  const total=Object.keys(CURRENT.dispo).length;
+  const set=Object.values(CURRENT.dispo).filter(d=>d.decision).length;
+  const p=document.getElementById('dprog'); if(p) p.innerHTML=`<b>${set}</b> of ${total} findings dispositioned.`;
+  const btn=document.getElementById('signbtn'); if(btn) btn.disabled = (set<total);
+}
+
+/* ---------- SUBMIT SIGNOFF (C1 → C2) ---------- */
+async function submitSignoff(decision){
+  const who=WHO[document.getElementById('whoami').value]||WHO.rita;
+  const {list, allSet}=collectDispositions();
+  if(decision==='approve' && !allSet){ toastReview('Disposition every finding before signing off.'); return; }
+  // accept/edit must carry final_text
+  for(const d of list){
+    if((d.decision==='accept'||d.decision==='edit') && (d.final_text==null || d.final_text==='')){
+      toastReview(`Finding ${d.finding_id}: ${d.decision==='edit'?'edit text is empty.':'no suggested edit to accept — use Edit or Reject.'}`); return;
+    }
+  }
+  const btn=document.getElementById('signbtn'); if(btn){btn.disabled=true;btn.textContent='Signing…';}
+  try{
+    const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:who.role, reviewer_user_id:who.id,
+        decision, note:(document.getElementById('signnote').value.trim()||null), finding_dispositions:list })});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||('Server '+r.status));
+    if(decision==='return'){ toastReview('Returned for revision. Reloading queue…',true); setTimeout(showQueue,900); return; }
+    // approve: show corrected doc + unplaced, then refresh the review from server
+    const box=document.getElementById('correctedbox');
+    box.innerHTML=renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
+    const sb=document.querySelector('.signbar'); if(sb) sb.remove();
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent='Sign off & assemble';} }
+}
+
+/* ---------- CORRECTED-DOC DIFF ---------- */
+function renderCorrected(original, corrected){
+  if(corrected==null) return '';
+  const body = (original!=null) ? diffHtml(original, corrected) : `<div class="diff">${esc(corrected)}</div>`;
+  return `<div class="corrected"><div class="sect"><h3>Corrected document</h3>${body}</div></div>`;
+}
+function renderUnplaced(unplaced){
+  if(!unplaced || !unplaced.length) return '';
+  const R={omission_no_anchor:'Omission — needs manual insertion',anchor_not_found:'Anchor not found verbatim',anchor_multiple_matches:'Anchor appears more than once',anchor_overlap:'Overlaps another accepted edit',no_original_content:'No original content stored'};
+  return `<div class="unplaced"><b>${unplaced.length} finding(s) need manual placement.</b><ul>${unplaced.map(u=>`<li><code>${esc(u.finding_id)}</code> — ${esc(R[u.reason]||u.reason)}${u.final_text?`: “${esc(String(u.final_text).slice(0,120))}${String(u.final_text).length>120?'…':''}”`:''}</li>`).join('')}</ul></div>`;
+}
+// word-level diff: mark inserted/changed spans in the corrected text with <ins>
+function diffHtml(a, b){
+  const aw=a.split(/(\s+)/), bw=b.split(/(\s+)/);
+  const n=aw.length,m=bw.length;
+  // LCS DP (word arrays are small for a webinar script)
+  const dp=Array.from({length:n+1},()=>new Int32Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=aw[i]===bw[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  let i=0,j=0,out='';
+  const flush=[];
+  while(i<n&&j<m){
+    if(aw[i]===bw[j]){ out+=esc(bw[j]); i++;j++; }
+    else if(dp[i+1][j]>=dp[i][j+1]){ i++; }           // deletion (skip original)
+    else { out+=`<ins>${esc(bw[j])}</ins>`; j++; }     // insertion (mark)
+  }
+  while(j<m){ out+=`<ins>${esc(bw[j])}</ins>`; j++; }
+  return `<div class="diff">${out}</div>`;
+}
+function toastReview(m, ok){
+  let et=document.getElementById('rvtoast');
+  if(!et){ et=document.createElement('div'); et.id='rvtoast'; et.className='err-toast'; document.getElementById('review').prepend(et); }
+  et.textContent=m; et.style.display='block'; et.style.background=ok?'#eef7ea':'#fdeaea'; et.style.color=ok?'#2f6a24':'#8a1c1c'; et.style.borderColor=ok?'#bfe0b0':'#e6a6a6';
 }
 
 /* boot */

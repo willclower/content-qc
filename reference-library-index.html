@@ -10,7 +10,7 @@
 <style>
   :root{
     --navy:#1b2a4a; --blue:#2f6fb0; --orange:#e08a1e;
-    --bg:#f7f6f2; --card:#ffffff; --ink:#2a2f38; --muted:#6b7480;
+    --bg:#f4f1ea; --card:#ffffff; --ink:#2a2f38; --muted:#6b7480;
     --line:#e6e3da; --ok:#1f7a52; --warn:#b8811a; --err:#b0402e;
     --gov:#1f7a52; --ctx:#6b7480; --sup:#b0402e;
     --radius:14px; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
@@ -248,7 +248,7 @@ function card(d){
       <span class="pill ${esc(d.status)}">${esc(d.status)}</span>
     </div>
     <div class="meta"><span>Version <b>${esc(d.version||'—')}</b></span>
-      <span>Retrieved <b>${esc(d.retrieved_at||'—')}</b></span></div>
+      <span>Retrieved <b>${esc(fmtDate(d.retrieved_at))}</b></span></div>
     ${govs?`<div class="domains">${govs}</div>`:''}
     <div class="foot">
       <button class="btn" data-act="view">View text</button>
@@ -332,6 +332,7 @@ async function delDoc(d){
 
 /* ---- utils ----------------------------------------------------------------*/
 function splitList(s){return s?s.split(',').map(x=>x.trim()).filter(Boolean):[];}
+function fmtDate(s){ if(!s) return '—'; return String(s).slice(0,10); }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}

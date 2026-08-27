@@ -1,1 +1,0 @@
-AASM/SRS Consensus: healthy adults should sleep 7 or more hours per night on a regular basis. Sleeping less than 7 hours is associated with adverse health outcomes.

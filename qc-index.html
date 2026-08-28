@@ -335,7 +335,6 @@ function renderReview(rv, review_id, signoffs){
   const signBar = canDispose ? `<div class="signbar">
       <div class="prog" id="dprog">0 of ${findings.length} findings dispositioned.</div>
       <input class="signnote" id="signnote" type="text" placeholder="Overall note (optional)">
-      <button class="btn ghost" onclick="submitSignoff('return')">Return for revision</button>
       <button class="btn" id="signbtn" onclick="submitSignoff('approve')" disabled>Sign off &amp; assemble</button>
     </div>` : '';
 

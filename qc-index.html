@@ -111,6 +111,16 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .diff ins{background:#dff3d4;text-decoration:none;border-radius:3px;padding:0 2px}
 .unplaced{margin-top:14px;background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:10px;padding:12px 16px;font-size:13px}
 .unplaced ul{margin:6px 0 0;padding-left:18px}
+.placebar{background:var(--brand-tint);border:1px solid var(--brand-2);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13px;color:var(--brand)}
+.ppara{position:relative;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6;padding:2px 0}
+.pins{display:block;text-align:center;margin:2px 0}
+.pins button{font:inherit;font-size:11px;color:var(--brand);background:#fff;border:1px dashed var(--brand-2);border-radius:6px;padding:2px 10px;cursor:pointer;opacity:.7}
+.pins button:hover{opacity:1;background:var(--brand-tint)}
+.pplaced{background:#dff3d4;border-radius:6px;padding:6px 10px;margin:4px 0;font-size:12.5px;position:relative}
+.pplaced .rm{position:absolute;right:8px;top:6px;font-size:11px;color:var(--err);cursor:pointer;background:none;border:none}
+.omtodo{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:12.5px}
+.omtodo b{display:block;margin-bottom:2px}
+.pdoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:460px;overflow:auto}
 .hidden{display:none}
 </style>
 </head>
@@ -387,31 +397,140 @@ function refreshProgress(){
   const btn=document.getElementById('signbtn'); if(btn) btn.disabled = (set<total);
 }
 
-/* ---------- SUBMIT SIGNOFF (C1 → C2) ---------- */
+/* ---------- SUBMIT SIGNOFF (C1 -> C2), two-phase for omissions ---------- */
+// Client-side normalize + assemble MIRRORS the server (Assemble Corrected) for preview only.
+function cNormalize(s){return s.replace(/[\u2018\u2019\u201B\u2032\u0060\u00B4]/g,"'").replace(/[\u201C\u201D\u201F\u2033]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/\s+/g,' ');}
+function cBuildNormMap(orig){let norm='';const map=[];let i=0;const n=orig.length;while(i<n){const ch=orig[i];if(/\s/.test(ch)){let j=i;while(j<n&&/\s/.test(orig[j]))j++;norm+=' ';map.push(i);i=j;}else{let out=ch;if('\u2018\u2019\u201B\u2032\u0060\u00B4'.includes(ch))out="'";else if('\u201C\u201D\u201F\u2033'.includes(ch))out='"';else if('\u2013\u2014'.includes(ch))out='-';norm+=out;map.push(i);i++;}}map.push(n);return{norm,map};}
+// returns {swapped:string, unplaced:[...]} applying only anchor swaps (Step 1)
+function cApplySwaps(original, findings, dispoList){
+  const anchorOf={}; findings.forEach(f=>anchorOf[f.id]=(f.anchor_text??null));
+  const {norm,map}=cBuildNormMap(original);
+  const placements=[]; const unplaced=[];
+  for(const d of dispoList){
+    if(d.decision==='reject')continue;
+    if(d.decision!=='accept'&&d.decision!=='edit')continue;
+    const anchor=anchorOf[d.finding_id];
+    if(anchor==null||anchor==='')continue; // omission -> insertion phase
+    const na=cNormalize(anchor).trim();const occ=[];let s=0;
+    while(true){const k=norm.indexOf(na,s);if(k<0)break;occ.push([k,k+na.length]);s=k+1;}
+    if(occ.length===0)unplaced.push({finding_id:d.finding_id,reason:'anchor_not_found'});
+    else if(occ.length>1)unplaced.push({finding_id:d.finding_id,reason:'anchor_multiple_matches'});
+    else placements.push({s:map[occ[0][0]],e:map[occ[0][1]],t:d.final_text,id:d.finding_id});
+  }
+  placements.sort((a,b)=>a.s-b.s);const ov=new Set();
+  for(let i=1;i<placements.length;i++)if(placements[i].s<placements[i-1].e){ov.add(placements[i-1].id);ov.add(placements[i].id);}
+  for(const p of placements)if(ov.has(p.id))unplaced.push({finding_id:p.id,reason:'anchor_overlap'});
+  const apply=placements.filter(p=>!ov.has(p.id)).sort((a,b)=>b.s-a.s);
+  let r=original;for(const p of apply)r=r.slice(0,p.s)+p.t+r.slice(p.e);
+  return {swapped:r, unplaced};
+}
+function splitParas(text){const parts=text.split(/(\n\s*\n)/);const paras=[];let sep='\n\n';for(let i=0;i<parts.length;i++){if(i%2===0)paras.push(parts[i]);else if(!sep)sep=parts[i];}const s0=parts.find((_,i)=>i%2===1);return {paras, sep:s0||'\n\n'};}
+
+let PLACE=null; // {swapped, paras, sep, omissions:[{finding_id,final_text,idx|null}], baseDispo:[...], decision}
+
 async function submitSignoff(decision){
   const who=WHO[document.getElementById('whoami').value]||WHO.rita;
   const {list, allSet}=collectDispositions();
   if(decision==='approve' && !allSet){ toastReview('Disposition every finding before signing off.'); return; }
-  // accept/edit must carry final_text
   for(const d of list){
-    if((d.decision==='accept'||d.decision==='edit') && (d.final_text==null || d.final_text==='')){
-      toastReview(`Finding ${d.finding_id}: ${d.decision==='edit'?'edit text is empty.':'no suggested edit to accept — use Edit or Reject.'}`); return;
+    if((d.decision==='accept'||d.decision==='edit') && (d.final_text==null||d.final_text==='')){
+      toastReview(`Finding ${d.finding_id}: ${d.decision==='edit'?'edit text is empty.':'no suggested edit to accept - use Edit or Reject.'}`); return;
     }
   }
-  const btn=document.getElementById('signbtn'); if(btn){btn.disabled=true;btn.textContent='Signing…';}
+  if(decision==='return'){ return postSignoff('return', list, null); }
+
+  // APPROVE: find accepted omissions (anchor_text null) needing placement.
+  const findings=CURRENT.output.findings||[];
+  const anchorOf={}; findings.forEach(f=>anchorOf[f.id]=(f.anchor_text??null));
+  const omissions=list.filter(d=>(d.decision==='accept'||d.decision==='edit') && (anchorOf[d.finding_id]==null||anchorOf[d.finding_id]===''))
+                      .map(d=>({finding_id:d.finding_id, final_text:d.final_text, idx:null}));
+  if(omissions.length===0){ return postSignoff('approve', list, null); } // no manual placement needed
+
+  // enter placement phase
+  const original=CURRENT.output.content_source||null;
+  if(original==null){ toastReview('No original content stored - cannot place insertions. Re-run the first pass so content_source is saved.'); return; }
+  const {swapped}=cApplySwaps(original, findings, list);
+  const {paras, sep}=splitParas(swapped);
+  PLACE={ swapped, paras, sep, omissions, baseDispo:list, decision:'approve' };
+  renderPlacement();
+}
+
+function renderPlacement(){
+  const box=document.getElementById('correctedbox');
+  const todo=PLACE.omissions.filter(o=>o.idx===null);
+  let doc='<div class="pdoc" id="pdoc">';
+  // "before first" insertion point
+  doc+=insSlot(-1);
+  PLACE.paras.forEach((p,i)=>{
+    // any omission placed after paragraph i
+    doc+=`<div class="ppara">${esc(p)}</div>`;
+    const here=PLACE.omissions.filter(o=>o.idx===i);
+    here.forEach(o=>{ doc+=`<div class="pplaced">${esc(o.final_text)}<button class="rm" onclick="unplace('${esc(o.finding_id)}')">remove</button></div>`; });
+    doc+=insSlot(i);
+  });
+  doc+='</div>';
+  const todoHtml = todo.length
+    ? `<div class="placebar"><b>Place ${todo.length} insertion(s).</b> Pick the "+ insert here" point for each. Currently placing: <b>${esc(todo[0].finding_id)}</b></div>`
+       + todo.map(o=>`<div class="omtodo"><b>${esc(o.finding_id)} - to insert:</b>${esc(o.final_text)}</div>`).join('')
+    : `<div class="placebar"><b>All insertions placed.</b> Review the document, then confirm sign-off.</div>`;
+  const confirmBtn = `<div class="signbar">
+      <div class="prog">${PLACE.omissions.length-todo.length} of ${PLACE.omissions.length} insertions placed.</div>
+      <button class="btn ghost" onclick="cancelPlacement()">Back to findings</button>
+      <button class="btn" id="confirmbtn" onclick="confirmPlacement()" ${todo.length?'disabled':''}>Confirm sign-off</button>
+    </div>`;
+  box.innerHTML=`<div class="corrected"><div class="sect"><h3>Place insertions & review corrected document</h3>${todoHtml}${doc}${confirmBtn}</div></div>`;
+  // remove the original signbar (from findings view)
+  document.querySelectorAll('.signbar').forEach((b,i)=>{ if(i===0 && !b.querySelector('#confirmbtn')) b.remove(); });
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function insSlot(idx){
+  // the "next unplaced" omission is what a click will place
+  const next=PLACE.omissions.find(o=>o.idx===null);
+  if(!next) return `<div class="pins"><button disabled style="opacity:.3">+ insert here</button></div>`;
+  return `<div class="pins"><button onclick="placeHere(${idx})">+ insert here</button></div>`;
+}
+function placeHere(idx){
+  const next=PLACE.omissions.find(o=>o.idx===null);
+  if(!next) return;
+  next.idx=idx;
+  renderPlacement();
+}
+function unplace(fid){
+  const o=PLACE.omissions.find(x=>x.finding_id===fid);
+  if(o) o.idx=null;
+  renderPlacement();
+}
+function cancelPlacement(){
+  PLACE=null;
+  renderReview(CURRENT.output, CURRENT.review_id, []); // re-render findings view (signoffs re-fetched on reopen)
+}
+function confirmPlacement(){
+  // merge idx back into the disposition list, then post
+  const idxByFid={}; PLACE.omissions.forEach(o=>idxByFid[o.finding_id]=o.idx);
+  const list=PLACE.baseDispo.map(d=> (d.finding_id in idxByFid)
+    ? {...d, insert_after_paragraph: idxByFid[d.finding_id]} : d);
+  postSignoff('approve', list, null);
+}
+
+async function postSignoff(decision, list, _unused){
+  const who=WHO[document.getElementById('whoami').value]||WHO.rita;
+  const btnId = decision==='approve' ? (PLACE?'confirmbtn':'signbtn') : null;
+  const btn=btnId?document.getElementById(btnId):null;
+  if(btn){btn.disabled=true;btn.textContent='Signing...';}
   try{
     const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:who.role, reviewer_user_id:who.id,
-        decision, note:(document.getElementById('signnote').value.trim()||null), finding_dispositions:list })});
+        decision, note:(document.getElementById('signnote')?document.getElementById('signnote').value.trim()||null:null),
+        finding_dispositions:list })});
     const d=await r.json();
     if(!d.ok) throw new Error(d.error||('Server '+r.status));
-    if(decision==='return'){ toastReview('Returned for revision. Reloading queue…',true); setTimeout(showQueue,900); return; }
-    // approve: show corrected doc + unplaced, then refresh the review from server
+    if(decision==='return'){ toastReview('Returned for revision. Reloading queue...',true); setTimeout(showQueue,900); return; }
+    PLACE=null;
     const box=document.getElementById('correctedbox');
     box.innerHTML=renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
-    const sb=document.querySelector('.signbar'); if(sb) sb.remove();
+    document.querySelectorAll('.signbar').forEach(b=>b.remove());
     box.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent='Sign off & assemble';} }
+  }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent=PLACE?'Confirm sign-off':'Sign off & assemble';} }
 }
 
 /* ---------- CORRECTED-DOC DIFF ---------- */

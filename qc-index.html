@@ -121,6 +121,7 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .omtodo{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:12.5px}
 .omtodo b{display:block;margin-bottom:2px}
 .pdoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:460px;overflow:auto}
+.finding.flash{box-shadow:0 0 0 3px rgba(179,38,30,.5);transition:box-shadow .3s}
 .hidden{display:none}
 </style>
 </head>
@@ -280,6 +281,7 @@ function statusAllowsRD(status){ return status==='pending_rd' || status==='retur
 
 function renderReview(rv, review_id, signoffs){
   const el=document.getElementById('review');
+  const _t=document.getElementById('rvtoast'); if(_t){ _t.style.display='none'; _t.textContent=''; }
   const sc=rv.score||1;
   const findings=rv.findings||[];
   const errs=findings.filter(f=>f.tier==='error'),warns=findings.filter(f=>f.tier==='warning'),flags=findings.filter(f=>f.tier==='flag');
@@ -300,16 +302,24 @@ function renderReview(rv, review_id, signoffs){
 
   const dispoHtml=f=>{
     const isOmission = (f.anchor_text==null || f.anchor_text==='');
+    const hasEdit = !!(f.suggested_edit && f.suggested_edit.trim());
+    const acceptBtn = hasEdit
+      ? `<button class="dbtn" data-act="accept" onclick="setDispo('${esc(f.id)}','accept')">Accept as is</button>`
+      : `<button class="dbtn" data-act="accept" disabled title="No AI suggestion to accept — use Accept edits or Reject" style="opacity:.4;cursor:not-allowed">Accept as is</button>`;
+    let hint='';
+    if(isOmission && hasEdit) hint=`<div class="omit">Omission — no passage to swap. On accept, the AI's text is recorded and you'll place it into the document before signing off.</div>`;
+    else if(isOmission && !hasEdit) hint=`<div class="omit">Omission — the AI gave no suggested text. Use <b>Accept edits</b> to type what should be added (you'll place it in the document), or <b>Reject</b>.</div>`;
+    else if(!hasEdit) hint=`<div class="omit">No AI suggestion for this finding. Use <b>Accept edits</b> to write the replacement, or <b>Reject</b>.</div>`;
     return `<div class="dispo" data-fid="${esc(f.id)}">
       <div class="dbtns">
-        <button class="dbtn" data-act="accept" onclick="setDispo('${esc(f.id)}','accept')">Accept as is</button>
+        ${acceptBtn}
         <button class="dbtn" data-act="edit" onclick="setDispo('${esc(f.id)}','edit')">Accept edits</button>
         <button class="dbtn" data-act="reject" onclick="setDispo('${esc(f.id)}','reject')">Reject</button>
         <span class="dstate none" data-state>Not set</span>
       </div>
-      <textarea class="dedit hidden" data-edit placeholder="Edit the correction text, then it will be placed as written.">${esc(f.suggested_edit||'')}</textarea>
+      <textarea class="dedit hidden" data-edit placeholder="${isOmission?'Type the text to add, then it will be placed in the document.':'Edit the correction text, then it will be placed as written.'}">${esc(f.suggested_edit||'')}</textarea>
       <input class="dnote" data-dnote type="text" placeholder="Note (optional)">
-      ${isOmission?`<div class="omit">Omission — no passage to swap. On accept, this is recorded for manual insertion (nothing is auto-placed).</div>`:''}
+      ${hint}
     </div>`;
   };
 
@@ -433,7 +443,8 @@ async function submitSignoff(decision){
   if(decision==='approve' && !allSet){ toastReview('Disposition every finding before signing off.'); return; }
   for(const d of list){
     if((d.decision==='accept'||d.decision==='edit') && (d.final_text==null||d.final_text==='')){
-      toastReview(`Finding ${d.finding_id}: ${d.decision==='edit'?'edit text is empty.':'no suggested edit to accept - use Edit or Reject.'}`); return;
+      const msg = d.decision==='edit' ? `Finding ${d.finding_id}: edit text is empty — type the replacement or choose Reject.` : `Finding ${d.finding_id}: nothing to accept — use Accept edits to type the text, or Reject.`;
+      toastReview(msg); flashFinding(d.finding_id); return;
     }
   }
   if(decision==='return'){ return postSignoff('return', list, null); }
@@ -525,9 +536,13 @@ async function postSignoff(decision, list, _unused){
     if(!d.ok) throw new Error(d.error||('Server '+r.status));
     if(decision==='return'){ toastReview('Returned for revision. Reloading queue...',true); setTimeout(showQueue,900); return; }
     PLACE=null;
-    const box=document.getElementById('correctedbox');
-    box.innerHTML=renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
     document.querySelectorAll('.signbar').forEach(b=>b.remove());
+    document.querySelectorAll('.dispo').forEach(b=>b.remove()); // lock findings after sign-off
+    const box=document.getElementById('correctedbox');
+    const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Signed off by ${esc(who.id)}.</b> The corrected document is assembled and this review is now waiting for Will to approve (status: rd_complete).${(d.unplaced&&d.unplaced.length)?` ${d.unplaced.length} finding(s) still need manual placement — see below.`:''}</div>`;
+    box.innerHTML=banner + renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
+    // update the status line in the header
+    const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>rd_complete</b>');
     box.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent=PLACE?'Confirm sign-off':'Sign off & assemble';} }
 }
@@ -559,6 +574,11 @@ function diffHtml(a, b){
   }
   while(j<m){ out+=`<ins>${esc(bw[j])}</ins>`; j++; }
   return `<div class="diff">${out}</div>`;
+}
+function flashFinding(fid){
+  const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
+  const card=box?box.closest('.finding'):null;
+  if(card){ card.scrollIntoView({behavior:'smooth',block:'center'}); card.classList.add('flash'); setTimeout(()=>card.classList.remove('flash'),1800); }
 }
 function toastReview(m, ok){
   let et=document.getElementById('rvtoast');

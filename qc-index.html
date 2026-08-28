@@ -120,6 +120,8 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .pplaced .rm{position:absolute;right:8px;top:6px;font-size:11px;color:var(--err);cursor:pointer;background:none;border:none}
 .omtodo{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:12.5px}
 .omtodo b{display:block;margin-bottom:2px}
+.pedit{width:100%;font:inherit;font-size:12.5px;line-height:1.5;border:1.5px solid var(--brand-2);border-radius:8px;padding:8px 10px;min-height:60px;resize:vertical;background:#fff;color:var(--ink);margin-top:4px}
+.pplaced .pedit{border-color:#8fce7a;margin:0;padding-right:64px}
 .pdoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:460px;overflow:auto}
 .finding.flash{box-shadow:0 0 0 3px rgba(179,38,30,.5);transition:box-shadow .3s}
 .hidden{display:none}
@@ -466,40 +468,57 @@ async function submitSignoff(decision){
 }
 
 function renderPlacement(){
+  // capture any in-progress textarea edits before re-render
+  syncPlaceEdits();
   const box=document.getElementById('correctedbox');
   const todo=PLACE.omissions.filter(o=>o.idx===null);
   let doc='<div class="pdoc" id="pdoc">';
-  // "before first" insertion point
   doc+=insSlot(-1);
   PLACE.paras.forEach((p,i)=>{
-    // any omission placed after paragraph i
     doc+=`<div class="ppara">${esc(p)}</div>`;
     const here=PLACE.omissions.filter(o=>o.idx===i);
-    here.forEach(o=>{ doc+=`<div class="pplaced">${esc(o.final_text)}<button class="rm" onclick="unplace('${esc(o.finding_id)}')">remove</button></div>`; });
+    here.forEach(o=>{
+      doc+=`<div class="pplaced">
+        <textarea class="pedit" data-fid="${esc(o.finding_id)}" oninput="syncPlaceEdits()">${esc(o.final_text)}</textarea>
+        <button class="rm" onclick="unplace('${esc(o.finding_id)}')">remove</button>
+      </div>`;
+    });
     doc+=insSlot(i);
   });
   doc+='</div>';
-  const todoHtml = todo.length
-    ? `<div class="placebar"><b>Place ${todo.length} insertion(s).</b> Pick the "+ insert here" point for each. Currently placing: <b>${esc(todo[0].finding_id)}</b></div>`
-       + todo.map(o=>`<div class="omtodo"><b>${esc(o.finding_id)} - to insert:</b>${esc(o.final_text)}</div>`).join('')
-    : `<div class="placebar"><b>All insertions placed.</b> Review the document, then confirm sign-off.</div>`;
+  let todoHtml;
+  if(todo.length){
+    todoHtml=`<div class="placebar"><b>Place ${todo.length} insertion(s).</b> Edit the text if needed, then click the "+ insert here" point where it should go. Currently placing: <b>${esc(todo[0].finding_id)}</b></div>`
+      + todo.map(o=>`<div class="omtodo"><b>${esc(o.finding_id)} — text to insert (editable):</b>
+          <textarea class="pedit" data-fid="${esc(o.finding_id)}" oninput="syncPlaceEdits()">${esc(o.final_text)}</textarea></div>`).join('');
+  } else {
+    todoHtml=`<div class="placebar"><b>All insertions placed.</b> You can still edit any inserted text below. Then confirm sign-off.</div>`;
+  }
   const confirmBtn = `<div class="signbar">
       <div class="prog">${PLACE.omissions.length-todo.length} of ${PLACE.omissions.length} insertions placed.</div>
       <button class="btn ghost" onclick="cancelPlacement()">Back to findings</button>
       <button class="btn" id="confirmbtn" onclick="confirmPlacement()" ${todo.length?'disabled':''}>Confirm sign-off</button>
     </div>`;
   box.innerHTML=`<div class="corrected"><div class="sect"><h3>Place insertions & review corrected document</h3>${todoHtml}${doc}${confirmBtn}</div></div>`;
-  // remove the original signbar (from findings view)
   document.querySelectorAll('.signbar').forEach((b,i)=>{ if(i===0 && !b.querySelector('#confirmbtn')) b.remove(); });
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
+// pull current textarea values back into PLACE.omissions so edits persist across re-renders and into confirm
+function syncPlaceEdits(){
+  if(!PLACE) return;
+  document.querySelectorAll('.pedit').forEach(t=>{
+    const fid=t.getAttribute('data-fid');
+    const o=PLACE.omissions.find(x=>x.finding_id===fid);
+    if(o) o.final_text=t.value;
+  });
+}
 function insSlot(idx){
-  // the "next unplaced" omission is what a click will place
   const next=PLACE.omissions.find(o=>o.idx===null);
   if(!next) return `<div class="pins"><button disabled style="opacity:.3">+ insert here</button></div>`;
   return `<div class="pins"><button onclick="placeHere(${idx})">+ insert here</button></div>`;
 }
 function placeHere(idx){
+  syncPlaceEdits();
   const next=PLACE.omissions.find(o=>o.idx===null);
   if(!next) return;
   next.idx=idx;
@@ -515,6 +534,7 @@ function cancelPlacement(){
   renderReview(CURRENT.output, CURRENT.review_id, []); // re-render findings view (signoffs re-fetched on reopen)
 }
 function confirmPlacement(){
+  syncPlaceEdits();
   // merge idx back into the disposition list, then post
   const idxByFid={}; PLACE.omissions.forEach(o=>idxByFid[o.finding_id]=o.idx);
   const list=PLACE.baseDispo.map(d=> (d.finding_id in idxByFid)

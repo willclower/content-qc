@@ -132,7 +132,7 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
   <div class="brand" onclick="showQueue()">MedWell <b>QC</b> · First-Pass Review</div>
   <div class="tbtns">
     <span class="who">Signed in as
-      <select id="whoami">
+      <select id="whoami" onchange="saveWho()">
         <option value="rita">Rita Madden (RD)</option>
         <option value="will">Will Clower (Founder)</option>
       </select>
@@ -249,9 +249,9 @@ async function openReview(review_id){
     const d=await r.json();
     if(!d.ok) throw new Error(d.error||'Not found');
     const rvobj = d.review.output || d.review;
-    // fold the row-level corrected_content column into the object for rendering
+    // fold row-level columns into the object for rendering; COLUMN status is authoritative
     if(d.review.corrected_content!=null) rvobj.corrected_content=d.review.corrected_content;
-    if(rvobj.status==null && d.review.status) rvobj.status=d.review.status;
+    if(d.review.status) rvobj.status=d.review.status; // column wins over stale blob copy
     renderReview(rvobj, d.review.review_id, d.signoffs||[]);
   }catch(e){ document.getElementById('review').innerHTML=`<div class="err-toast" style="display:block">Could not open: ${esc(e.message)}</div>`; }
 }
@@ -290,8 +290,11 @@ function renderReview(rv, review_id, signoffs){
   const trigs=rv.elevated_review_triggers||[], gaps=rv.coverage_gaps||[], refs=rv.references_consulted||[];
 
   const who=WHO[document.getElementById('whoami').value] || WHO.rita;
+  const st = rv.status||'pending_rd';
   // RD dispositions only when it's an RD acting on a pending_rd/returned review.
-  const canDispose = who.role==='rd' && statusAllowsRD(rv.status||'pending_rd');
+  const canDispose = who.role==='rd' && statusAllowsRD(st);
+  // Founder approves only when it's the founder acting on an rd_complete review.
+  const canApprove = who.role==='founder' && st==='rd_complete';
 
   // (re)build CURRENT state
   CURRENT = { review_id, output: rv, status: rv.status||'pending_rd', dispo:{} };
@@ -349,6 +352,12 @@ function renderReview(rv, review_id, signoffs){
       <input class="signnote" id="signnote" type="text" placeholder="Overall note (optional)">
       <button class="btn" id="signbtn" onclick="submitSignoff('approve')" disabled>Sign off &amp; assemble</button>
     </div>` : '';
+  const founderBar = canApprove ? `<div class="signbar">
+      <div class="prog">Rita has signed off. Review the corrected document above, then approve or return it.</div>
+      <input class="signnote" id="foundernote" type="text" placeholder="Note (optional)">
+      <button class="btn ghost" onclick="founderDecide('return')">Return to Rita</button>
+      <button class="btn" onclick="founderDecide('approve')">Approve &amp; lock</button>
+    </div>` : '';
 
   el.innerHTML=`<div class="panel">
      <div class="rvhead">
@@ -365,6 +374,7 @@ function renderReview(rv, review_id, signoffs){
      <div class="sect"><h3>References consulted (${refs.length})</h3><div class="reflist">${refs.length?refs.map(r=>`<code>${esc(r.doc_id)}</code> ${esc(r.version||'')}`).join(' · '):'None routed.'}</div></div>
      ${trailHtml}
      <div id="correctedbox">${correctedHtml}</div>
+     ${founderBar}
      ${signBar}
      <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → founder); nothing here constitutes approval.</div>
    </div>`;
@@ -542,6 +552,31 @@ function confirmPlacement(){
   postSignoff('approve', list, null);
 }
 
+async function founderDecide(decision){
+  const who=WHO[document.getElementById('whoami').value]||WHO.will;
+  if(who.role!=='founder'){ toastReview('Switch to Will (Founder) to approve.'); return; }
+  const note=(document.getElementById('foundernote')?document.getElementById('foundernote').value.trim()||null:null);
+  const verb=decision==='approve'?'Approving':'Returning';
+  const bar=document.querySelectorAll('.signbar'); bar.forEach(b=>b.querySelectorAll('button').forEach(x=>x.disabled=true));
+  try{
+    const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:'founder', reviewer_user_id:who.id,
+        decision, note, finding_dispositions:[] })});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||('Server '+r.status));
+    document.querySelectorAll('.signbar').forEach(b=>b.remove());
+    const box=document.getElementById('correctedbox');
+    if(decision==='approve'){
+      const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Approved &amp; locked by ${esc(who.id)}.</b> This corrected document is the final approved artifact (status: approved). Two sign-offs complete.</div>`;
+      box.innerHTML=banner + box.innerHTML;
+      const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>approved</b>');
+    } else {
+      toastReview('Returned to Rita for revision. Reloading queue...',true); setTimeout(showQueue,900); return;
+    }
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){ toastReview('Failed: '+e.message); document.querySelectorAll('.signbar button').forEach(x=>x.disabled=false); }
+}
+
 async function postSignoff(decision, list, _unused){
   const who=WHO[document.getElementById('whoami').value]||WHO.rita;
   const btnId = decision==='approve' ? (PLACE?'confirmbtn':'signbtn') : null;
@@ -607,6 +642,8 @@ function toastReview(m, ok){
 }
 
 /* boot */
+function saveWho(){ try{ localStorage.setItem('qc_whoami', document.getElementById('whoami').value); }catch(e){} }
+(function restoreWho(){ try{ const w=localStorage.getItem('qc_whoami'); if(w){ const s=document.getElementById('whoami'); if(s) s.value=w; } }catch(e){} })();
 showQueue();
 </script>
 </body>

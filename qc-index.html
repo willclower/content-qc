@@ -190,14 +190,14 @@ const HOST="https://n8n-admin.willclower.com/webhook";
 const QC_RUN=HOST+"/qc-first-pass";
 const QC_READ=HOST+"/qc-review-read";
 const QC_SIGNOFF=HOST+"/qc-signoff";
-const WHO={rita:{id:"Rita Madden",role:"rd"},will:{id:"Will Clower",role:"founder"}};
+const WHO={rita:{id:"Rita Madden",role:"rd"},will:{id:"Will Clower",role:"editorial"}};
 let CURRENT=null; // {review_id, output, dispo:{finding_id:{decision,final_text,note,original_suggestion}}}
 const SCORE_LABEL={1:"Ship-ready",2:"Minor revision",3:"Substantive revision",4:"Rework",5:"Pull & rewrite"};
 const TRIG_LABEL={numeric_dietary_target:"Numeric dietary target",weight_eating_behavior:"Weight / eating behavior",
   named_condition:"Named condition",medication_adjacent:"Medication-adjacent",mental_health:"Mental health"};
 const GROUPS=[
   {key:'pending_rd', label:'Waiting for Rita (RD)'},
-  {key:'rd_complete', label:'Waiting for Will (approve)'},
+  {key:'pending_editorial', label:'Waiting for Will (approve)'},
   {key:'returned', label:'Sent back for revision'},
   {key:'approved', label:'Approved'},
 ];
@@ -293,8 +293,8 @@ function renderReview(rv, review_id, signoffs){
   const st = rv.status||'pending_rd';
   // RD dispositions only when it's an RD acting on a pending_rd/returned review.
   const canDispose = who.role==='rd' && statusAllowsRD(st);
-  // Founder approves only when it's the founder acting on an rd_complete review.
-  const canApprove = who.role==='founder' && st==='rd_complete';
+  // Editorial (2nd reviewer) approves only when acting on a pending_editorial review.
+  const canApprove = who.role==='editorial' && st==='pending_editorial';
 
   // (re)build CURRENT state
   CURRENT = { review_id, output: rv, status: rv.status||'pending_rd', dispo:{} };
@@ -376,7 +376,7 @@ function renderReview(rv, review_id, signoffs){
      <div id="correctedbox">${correctedHtml}</div>
      ${founderBar}
      ${signBar}
-     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → founder); nothing here constitutes approval.</div>
+     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → editorial review); nothing here constitutes approval.</div>
    </div>`;
   el.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -554,13 +554,13 @@ function confirmPlacement(){
 
 async function founderDecide(decision){
   const who=WHO[document.getElementById('whoami').value]||WHO.will;
-  if(who.role!=='founder'){ toastReview('Switch to Will (Founder) to approve.'); return; }
+  if(who.role!=='editorial'){ toastReview('Switch to Will (Founder) to approve.'); return; }
   const note=(document.getElementById('foundernote')?document.getElementById('foundernote').value.trim()||null:null);
   const verb=decision==='approve'?'Approving':'Returning';
   const bar=document.querySelectorAll('.signbar'); bar.forEach(b=>b.querySelectorAll('button').forEach(x=>x.disabled=true));
   try{
     const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:'founder', reviewer_user_id:who.id,
+      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:'editorial', reviewer_user_id:who.id,
         decision, note, finding_dispositions:[] })});
     const d=await r.json();
     if(!d.ok) throw new Error(d.error||('Server '+r.status));
@@ -594,10 +594,10 @@ async function postSignoff(decision, list, _unused){
     document.querySelectorAll('.signbar').forEach(b=>b.remove());
     document.querySelectorAll('.dispo').forEach(b=>b.remove()); // lock findings after sign-off
     const box=document.getElementById('correctedbox');
-    const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Signed off by ${esc(who.id)}.</b> The corrected document is assembled and this review is now waiting for Will to approve (status: rd_complete).${(d.unplaced&&d.unplaced.length)?` ${d.unplaced.length} finding(s) still need manual placement — see below.`:''}</div>`;
+    const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Signed off by ${esc(who.id)}.</b> The corrected document is assembled and this review is now waiting for Will to approve (status: pending_editorial).${(d.unplaced&&d.unplaced.length)?` ${d.unplaced.length} finding(s) still need manual placement — see below.`:''}</div>`;
     box.innerHTML=banner + renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
     // update the status line in the header
-    const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>rd_complete</b>');
+    const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>pending_editorial</b>');
     box.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent=PLACE?'Confirm sign-off':'Sign off & assemble';} }
 }

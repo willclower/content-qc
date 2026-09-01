@@ -1,697 +1,352 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MedWell QC · First-Pass Review</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QC Reference Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#f4f1ea; --card:#fbfaf6; --ink:#1e2d35; --muted:#5c6b72;
-  --line:#e2ddd0; --brand:#1a6882; --brand-2:#29a4c4; --brand-tint:#eaf6fa;
-  --err:#b3261e; --warn:#b7791f; --flag:#4a5e66; --ok:#3f7a34;
-  --radius:12px; --shadow:0 1px 3px rgba(30,45,53,.08),0 8px 24px rgba(30,45,53,.06);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55}
-a{color:var(--brand);cursor:pointer}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--line);background:#faf8f2;position:sticky;top:0;z-index:20}
-.brand{font-weight:600;font-size:16px;letter-spacing:.2px;cursor:pointer}
-.brand b{color:var(--brand-2)}
-.tbtns{display:flex;gap:10px;align-items:center}
-.who{font-size:12px;color:var(--muted);margin-right:6px}
-.who select{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:#fff}
-.linkbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:inherit;color:var(--brand);cursor:pointer}
-.linkbtn:hover{background:var(--brand-tint);border-color:var(--brand-2)}
-.linkbtn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
-.linkbtn.primary:hover{background:#155470}
-.wrap{max-width:940px;margin:0 auto;padding:32px 24px 80px}
-.eyebrow{display:inline-block;border:1px solid var(--brand-2);color:var(--brand);border-radius:999px;padding:5px 14px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
-h1{font-family:Fraunces,serif;font-weight:400;font-size:38px;margin:16px 0 8px;line-height:1.1}
-h1 em{color:var(--brand);font-style:italic}
-.sub{color:var(--muted);max-width:62ch;margin:0 0 26px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
-label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
-.row{display:flex;gap:14px;flex-wrap:wrap}
-.row .fld{flex:1;min-width:220px}
-input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px}
-input:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(26,104,130,.15)}
-textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.5}
-.hint{color:var(--muted);font-size:12px;margin:4px 0 0}
-.actions{display:flex;align-items:center;gap:14px;margin-top:18px}
-.btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:12px 22px;font:inherit;font-weight:600;cursor:pointer}
-.btn:hover{background:#155470}
-.btn:disabled{opacity:.55;cursor:default}
-.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--line)}
-.btn.ghost:hover{background:var(--brand-tint)}
-.status{color:var(--muted);font-size:13px}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
-@keyframes sp{to{transform:rotate(360deg)}}
-/* queue */
-.qhead{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
-.qgroup{margin-bottom:26px}
-.qgroup h3{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin:0 0 10px;font-weight:600;display:flex;align-items:center;gap:8px}
-.qcount{background:var(--brand-tint);color:var(--brand);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
-.qrow{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
-.qrow:hover{border-color:var(--brand-2);background:#fff}
-.qscore{width:34px;height:34px;flex:none;border-radius:8px;color:#fff;font-family:Fraunces,serif;font-size:18px;display:flex;align-items:center;justify-content:center}
-.qmain{flex:1;min-width:0}
-.qtitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qmeta{color:var(--muted);font-size:12px;margin-top:2px}
-.qturn{font-size:12px;color:var(--brand);font-weight:600;white-space:nowrap}
-.qtrig{font-size:11px;color:#8a5a00;background:#fff4e5;border:1px solid #f0c887;border-radius:999px;padding:1px 8px;margin-left:6px}
-.empty{color:var(--muted);font-size:13px;font-style:italic;padding:6px 0}
-.s1{background:#3f7a34}.s2{background:#6b8e23}.s3{background:#b7791f}.s4{background:#c05621}.s5{background:#b3261e}
-/* review (reused) */
-.rvhead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
-.rvtitle{font-family:Fraunces,serif;font-size:24px}
-.rvmeta{color:var(--muted);font-size:12px;margin-top:4px}
-.scorebox{text-align:center;min-width:118px;border-radius:12px;padding:14px 10px;color:#fff}
-.scorebox .n{font-family:Fraunces,serif;font-size:38px;line-height:1}
-.scorebox .l{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.95;margin-top:4px}
-.banner{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px}
-.banner.elevated{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00}
-.banner.scope{background:#fdeaea;border:1px solid #e6a6a6;color:#8a1c1c}
-.banner.clean{background:#eef7ea;border:1px solid #bfe0b0;color:#2f6a24}
-.pill.trig{display:inline-block;background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:999px;padding:3px 11px;font-size:12px;margin:3px 4px 0 0;font-weight:500}
-.sect{margin-top:22px}
-.sect h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 10px;font-weight:600}
-.finding{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#fff}
-.finding.error{border-left-color:var(--err)}.finding.warning{border-left-color:var(--warn)}.finding.flag{border-left-color:var(--flag)}
-.tier{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:5px;margin-right:8px}
-.tier.error{background:#fdeaea;color:var(--err)}.tier.warning{background:#fdf3e2;color:var(--warn)}.tier.flag{background:#eef1f2;color:var(--flag)}
-.fclaim{font-weight:500}.floc{color:var(--muted);font-size:12px;margin-left:6px}
-.fref{font-size:13px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
-.fref b{color:var(--ink);font-weight:600}
-.fedit{font-size:13px;margin-top:8px;color:#2f4a52}.fedit b{color:var(--brand)}
-.gap{font-size:13px;color:var(--muted);padding:8px 0;border-bottom:1px dashed var(--line)}.gap b{color:var(--ink)}
-.reflist{font-size:12px;color:var(--muted)}.reflist code{background:#f0ece2;padding:1px 6px;border-radius:4px}
-.err-toast{background:#fdeaea;border:1px solid #e6a6a6;color:#8a1c1c;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;display:none}
-.draftnote{font-size:12px;color:var(--muted);margin-top:24px;font-style:italic;border-top:1px solid var(--line);padding-top:14px}
-.trail{margin-top:18px;font-size:12px;color:var(--muted)}
-.trail .ev{padding:4px 0;border-bottom:1px dashed var(--line)}
-.dispo{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
-.dispo .dbtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.dbtn{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:6px 12px;cursor:pointer}
-.dbtn:hover{border-color:var(--brand-2)}
-.dbtn.on-accept{background:#eef7ea;border-color:#8fce7a;color:#2f6a24}
-.dbtn.on-edit{background:var(--brand-tint);border-color:var(--brand-2);color:var(--brand)}
-.dbtn.on-reject{background:#f1eee9;border-color:#c9c2b4;color:var(--muted)}
-.dedit{width:100%;font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:64px;resize:vertical;margin-bottom:6px}
-.dnote{width:100%;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
-.dstate{font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;padding:2px 8px;border-radius:5px;margin-left:8px}
-.dstate.accept{background:#eef7ea;color:#2f6a24}.dstate.edit{background:var(--brand-tint);color:var(--brand)}.dstate.reject{background:#f1eee9;color:var(--muted)}.dstate.none{background:#fdf3e2;color:var(--warn)}
-.omit{font-size:12px;color:var(--warn);margin-top:8px}
-.signbar{position:sticky;bottom:0;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:14px 18px;margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.signbar .prog{font-size:13px;color:var(--muted);flex:1;min-width:160px}
-.signbar .prog b{color:var(--ink)}
-.signnote{flex:2;min-width:220px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:9px 11px}
-.corrected{margin-top:22px}
-.diff{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:440px;overflow:auto}
-.diff ins{background:#dff3d4;text-decoration:none;border-radius:3px;padding:0 2px}
-.unplaced{margin-top:14px;background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:10px;padding:12px 16px;font-size:13px}
-.unplaced ul{margin:6px 0 0;padding-left:18px}
-.placebar{background:var(--brand-tint);border:1px solid var(--brand-2);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13px;color:var(--brand)}
-.ppara{position:relative;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.6;padding:2px 0}
-.pins{display:block;text-align:center;margin:2px 0}
-.pins button{font:inherit;font-size:11px;color:var(--brand);background:#fff;border:1px dashed var(--brand-2);border-radius:6px;padding:2px 10px;cursor:pointer;opacity:.7}
-.pins button:hover{opacity:1;background:var(--brand-tint)}
-.pplaced{background:#dff3d4;border-radius:6px;padding:6px 10px;margin:4px 0;font-size:12.5px;position:relative}
-.pplaced .rm{position:absolute;right:8px;top:6px;font-size:11px;color:var(--err);cursor:pointer;background:none;border:none}
-.omtodo{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:12.5px}
-.omtodo b{display:block;margin-bottom:2px}
-.pedit{width:100%;font:inherit;font-size:12.5px;line-height:1.5;border:1.5px solid var(--brand-2);border-radius:8px;padding:8px 10px;min-height:60px;resize:vertical;background:#fff;color:var(--ink);margin-top:4px}
-.pplaced .pedit{border-color:#8fce7a;margin:0;padding-right:64px}
-.pdoc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-height:460px;overflow:auto}
-.finding.flash{box-shadow:0 0 0 3px rgba(179,38,30,.5);transition:box-shadow .3s}
-.hidden{display:none}
+  :root{
+    --navy:#1b2a4a; --blue:#2f6fb0; --orange:#e08a1e;
+    --bg:#f4f1ea; --card:#ffffff; --ink:#2a2f38; --muted:#6b7480;
+    --line:#e6e3da; --ok:#1f7a52; --warn:#b8811a; --err:#b0402e;
+    --gov:#1f7a52; --ctx:#6b7480; --sup:#b0402e;
+    --radius:14px; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;border-bottom:1px solid var(--line);background:#fbfaf7;position:sticky;top:0;z-index:20}
+  .brand{font-weight:600;color:var(--navy);font-size:15px}
+  .brand .qc{color:var(--blue)}
+  .conn{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#c8c2b4}
+  .dot.on{background:var(--ok)}
+  .btn{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line);
+    background:#fff;color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+  .btn:hover{border-color:var(--blue);color:var(--blue)}
+  .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .btn.primary:hover{background:#255d94;color:#fff}
+  .btn.danger:hover{border-color:var(--err);color:var(--err)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:40px 28px 80px}
+  .kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--blue);font-weight:600;border:1px solid var(--line);border-radius:999px;
+    padding:5px 13px;margin-bottom:18px;background:#fff}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:400;color:var(--navy);
+    font-size:40px;line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
+  h1 .accent{font-style:italic;font-weight:500;color:var(--blue)}
+  .lede{color:var(--muted);font-size:15px;max-width:60ch;margin:0 0 30px}
+
+  .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+  .search{flex:1;min-width:240px;position:relative}
+  .search input{width:100%;font:inherit;font-size:14px;padding:11px 14px 11px 38px;
+    border:1px solid var(--line);border-radius:10px;background:#fff}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,111,176,.12)}
+  .search svg{position:absolute;left:12px;top:11px;color:var(--muted)}
+  select{font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+
+  .count{font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .doc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+  .doc:hover{border-color:#cfd6de}
+  .doc .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .doc .title{font-family:'Fraunces',serif;font-size:16px;color:var(--navy);line-height:1.2;font-weight:600}
+  .doc .issuer{font-size:12px;color:var(--muted);margin-top:2px}
+  .pill{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .pill.governing{background:#e7f2ec;color:var(--gov)}
+  .pill.context{background:#eef0f2;color:var(--ctx)}
+  .pill.superseded{background:#f6e9e6;color:var(--sup)}
+  .meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .meta b{color:var(--ink);font-weight:500}
+  .domains{display:flex;gap:6px;flex-wrap:wrap}
+  .domain{font-family:var(--mono);font-size:10.5px;background:#f2efe8;color:#5a6673;
+    padding:2px 7px;border-radius:6px}
+  .doc .foot{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+  .doc .foot .btn{font-size:12px;padding:6px 11px}
+
+  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:14px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(27,42,74,.32);display:none;
+    align-items:flex-start;justify-content:center;padding:48px 20px;z-index:40;overflow:auto}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:760px;width:100%;padding:28px 30px;
+    box-shadow:0 20px 60px rgba(27,42,74,.22)}
+  .modal h2{font-family:'Fraunces',serif;font-weight:500;color:var(--navy);margin:0 0 4px;font-size:24px}
+  .modal .sub{font-size:13px;color:var(--muted);margin:0 0 20px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .field .hint{font-weight:400;color:var(--muted)}
+  .field input,.field textarea,.field select{width:100%;font:inherit;font-size:13.5px;
+    padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  .field textarea{min-height:120px;resize:vertical;font-family:var(--mono);font-size:12.5px}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(47,111,176,.12)}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .close{float:right;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;border:none;background:none}
+  .doctext{font-family:var(--mono);font-size:12px;white-space:pre-wrap;background:#faf9f5;
+    border:1px solid var(--line);border-radius:10px;padding:16px;max-height:50vh;overflow:auto;color:#3a424c}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;font-size:13px;margin-bottom:18px}
+  .kv .k{color:var(--muted)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);
+    color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:60;opacity:0;
+    transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .toast.err{background:var(--err)}
+  .banner{background:#fff6e6;border:1px solid #f0dcae;color:#7a5a12;font-size:12.5px;
+    padding:10px 14px;border-radius:10px;margin-bottom:20px}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand" onclick="showQueue()">MedWell <b>QC</b> · First-Pass Review</div>
-  <div class="tbtns">
-    <span class="who">Signed in as
-      <select id="whoami" onchange="saveWho()">
-        <option value="rita">Rita Madden (RD)</option>
-        <option value="will">Will Clower (Founder)</option>
-      </select>
-    </span>
-    <button class="linkbtn primary" onclick="showNew()">+ New review</button>
-    <button class="linkbtn" onclick="location.href='reference-library-index.html'">Reference library →</button>
+  <div class="brand">MedWell <span class="qc">QC</span> · Reference Library</div>
+  <div class="conn">
+    <button class="btn" onclick="location.href='qc-index.html'">← Back to reviews</button>
+    <button class="btn primary" id="addBtn">Add reference</button>
   </div>
 </div>
 
 <div class="wrap">
+  <span class="kicker">Component A · Canonical guidance corpus</span>
+  <h1>The <span class="accent">reference library</span></h1>
+  <p class="lede">The versioned guidance the first-pass QC review is measured against. Each reference is read whole; tags decide which references govern a given claim. This is the single source both the QC pass and this search read from.</p>
 
-  <!-- ========== QUEUE VIEW ========== -->
-  <div id="view-queue">
-    <span class="eyebrow">Review queue</span>
-    <h1>What's <em>in flight</em></h1>
-    <p class="sub">Everything the first pass has reviewed, grouped by whose turn it is. Click any item to open it.</p>
-    <div class="qhead"><span class="status" id="qstat"></span><button class="btn ghost" onclick="loadQueue()">Refresh</button></div>
-    <div id="queue"></div>
-  </div>
-
-  <!-- ========== NEW REVIEW VIEW ========== -->
-  <div id="view-new" class="hidden">
-    <span class="eyebrow">Component B · AI First Pass · Draft-only</span>
-    <h1>Review a piece of <em>content</em></h1>
-    <p class="sub">Paste content below. The first pass finds which governing references apply, reads them whole, and returns a scored, source-cited draft review for the RD. It is advisory — never an approval.</p>
-    <div class="panel">
-      <div class="row">
-        <div class="fld"><label for="cid">Content ID</label>
-          <input type="text" id="cid" placeholder="brain-health-webinar">
-          <p class="hint">Stable slug. Re-running the same ID + version overwrites its review.</p></div>
-        <div class="fld"><label for="cver">Version <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-          <input type="text" id="cver" placeholder="auto: today-r1">
-          <p class="hint">Blank = auto-stamp today.</p></div>
-      </div>
-      <div style="margin-top:14px"><label for="ctitle">Title <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-        <input type="text" id="ctitle" placeholder="Brain Health Webinar"></div>
-      <div style="margin-top:14px"><label for="ctext">Content</label>
-        <textarea id="ctext" placeholder="Paste the full script / article / webinar text here…"></textarea></div>
-      <div class="actions"><button class="btn" id="runbtn" onclick="runQC()">Run QC review</button>
-        <span class="status" id="stat"></span></div>
-      <div class="err-toast" id="errtoast"></div>
+  <div class="controls">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Search title, issuer, topic, claim-domain…">
     </div>
+    <select id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="governing">Governing</option>
+      <option value="context">Context</option>
+      <option value="superseded">Superseded</option>
+    </select>
+    <select id="topicFilter"><option value="">All topics</option></select>
   </div>
 
-  <!-- ========== REVIEW VIEW ========== -->
-  <div id="view-review" class="hidden">
-    <a onclick="showQueue()">← Back to queue</a>
-    <div id="review" style="margin-top:14px"></div>
-  </div>
-
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No references match.</div>
 </div>
 
+<!-- View modal -->
+<div class="overlay" id="viewOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeModal('viewOverlay')">&times;</button>
+    <h2 id="vTitle"></h2>
+    <p class="sub" id="vIssuer"></p>
+    <div class="kv" id="vKv"></div>
+    <div id="vText"></div>
+  </div>
+</div>
+
+<!-- Add/edit modal -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <button class="close" onclick="closeModal('addOverlay')">&times;</button>
+    <h2 id="aHeading">Add reference</h2>
+    <p class="sub">Saved to the reference library. Re-saving an existing doc_id supersedes the prior version; the content hash is computed on save.</p>
+    <div class="field"><label>doc_id <span class="hint">— stable slug, immutable (e.g. aha-hypertension)</span></label><input id="aId" placeholder="aha-hypertension"></div>
+    <div class="field"><label>Title</label><input id="aTitle"></div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>Issuer</label><input id="aIssuer"></div>
+      <div><label>Version</label><input id="aVersion" placeholder="2025"></div>
+    </div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label>Status</label><select id="aStatus"><option>governing</option><option>context</option><option>superseded</option></select></div>
+      <div><label>Source URL</label><input id="aUrl"></div>
+    </div>
+    <div class="field"><label>Topics <span class="hint">— comma-separated</span></label><input id="aTopics" placeholder="hypertension, alcohol, blood_pressure"></div>
+    <div class="field"><label>Governing for <span class="hint">— claim-domains this doc owns, comma-separated</span></label><input id="aGov" placeholder="alcohol_limits, blood_pressure_thresholds"></div>
+    <div class="field"><label>Full reference text <span class="hint">— extracted plain text; the QC pass reads this whole</span></label><textarea id="aText" placeholder="Paste the full extracted text of the guideline…"></textarea></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('addOverlay')">Cancel</button>
+      <button class="btn primary" id="aSave">Save reference</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-const HOST="https://n8n-admin.willclower.com/webhook";
-const QC_RUN=HOST+"/qc-first-pass";
-const QC_READ=HOST+"/qc-review-read";
-const QC_SIGNOFF=HOST+"/qc-signoff";
-const WHO={rita:{id:"Rita Madden",role:"rd"},will:{id:"Will Clower",role:"editorial"}};
-let CURRENT=null; // {review_id, output, dispo:{finding_id:{decision,final_text,note,original_suggestion}}}
-const SCORE_LABEL={1:"Ship-ready",2:"Minor revision",3:"Substantive revision",4:"Rework",5:"Pull & rewrite"};
-const TRIG_LABEL={numeric_dietary_target:"Numeric dietary target",weight_eating_behavior:"Weight / eating behavior",
-  named_condition:"Named condition",medication_adjacent:"Medication-adjacent",mental_health:"Mental health"};
-const GROUPS=[
-  {key:'pending_rd', label:'Waiting for Rita (RD)'},
-  {key:'pending_editorial', label:'Waiting for Will (approve)'},
-  {key:'returned', label:'Sent back for revision'},
-  {key:'approved', label:'Approved'},
-];
-function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
-function show(v){for(const id of ['queue','new','review']) document.getElementById('view-'+id).classList.toggle('hidden', id!==v);}
-function showQueue(){show('queue');loadQueue();}
-function showNew(){show('new');}
+/* ---- config ---------------------------------------------------------------
+   Front end talks only to n8n webhooks (browser <-> n8n, like Nona). No token.
+   Read  -> qc-reference-read   (list | search | route)
+   Write -> qc-reference-write  (upsert | delete)
+   Store is Postgres; content lives server-side. Moving to the site server later
+   changes only HOST, nothing else.                                           */
+const HOST  = "https://n8n-admin.willclower.com/webhook";
+const READ  = `${HOST}/qc-reference-read`;
+const WRITE = `${HOST}/qc-reference-write`;
 
-/* ---------- QUEUE ---------- */
-async function loadQueue(){
-  const stat=document.getElementById('qstat'); stat.innerHTML='<span class="spin"></span>Loading…';
+let DOCS = [];      // current corpus (from list)
+let editingId = null;
+
+async function postJSON(url, body){
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+/* ---- load -----------------------------------------------------------------*/
+async function loadIndex(){
   try{
-    const r=await fetch(QC_READ,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'queue'})});
-    const d=await r.json();
-    if(!d.ok) throw new Error(d.error||'Failed');
-    renderQueue(d.items||[]); stat.textContent=(d.count||0)+' total';
-  }catch(e){ stat.textContent='Could not load queue: '+e.message; }
-}
-function renderQueue(items){
-  const box=document.getElementById('queue');
-  const by={}; items.forEach(it=>{(by[it.status]=by[it.status]||[]).push(it);});
-  let html='';
-  for(const g of GROUPS){
-    const rows=by[g.key]||[];
-    html+=`<div class="qgroup"><h3>${g.label} <span class="qcount">${rows.length}</span></h3>`;
-    if(!rows.length){ html+=`<div class="empty">Nothing here.</div></div>`; continue; }
-    html+=rows.map(it=>{
-      const trig=(it.elevated_review_triggers||[]).length?`<span class="qtrig">must reach RD</span>`:'';
-      return `<div class="qrow" onclick="openReview('${esc(it.review_id)}')">
-        <div class="qscore s${it.score||1}">${it.score||'?'}</div>
-        <div class="qmain">
-          <div class="qtitle">${esc(it.content_title||it.content_id)}${trig}</div>
-          <div class="qmeta">${esc(it.content_id)} · ${esc(it.content_version)} · ${it.finding_count} findings · updated ${esc((it.updated_at||'').slice(0,10))}</div>
-        </div>
-        <div class="qturn">${esc(it.whose_turn||'')}</div>
-      </div>`;
-    }).join('');
-    html+='</div>';
-  }
-  box.innerHTML=html;
+    const res = await postJSON(READ, {mode:'list'});
+    DOCS = (res.docs||[]);
+  }catch(e){ DOCS=[]; toast("Couldn't load the library.", true); }
+  populateTopics();
+  render();
 }
 
-/* ---------- OPEN ONE ---------- */
-async function openReview(review_id){
-  show('review');
-  document.getElementById('review').innerHTML='<div class="panel"><span class="spin"></span> Loading review…</div>';
-  try{
-    const r=await fetch(QC_READ,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'get',review_id})});
-    const d=await r.json();
-    if(!d.ok) throw new Error(d.error||'Not found');
-    const rvobj = d.review.output || d.review;
-    // fold row-level columns into the object for rendering; COLUMN status is authoritative
-    if(d.review.corrected_content!=null) rvobj.corrected_content=d.review.corrected_content;
-    if(d.review.status) rvobj.status=d.review.status; // column wins over stale blob copy
-    if(d.review.content_id!=null) rvobj.content_id=d.review.content_id;
-    if(d.review.content_version!=null) rvobj.content_version=d.review.content_version;
-    renderReview(rvobj, d.review.review_id, d.signoffs||[]);
-  }catch(e){ document.getElementById('review').innerHTML=`<div class="err-toast" style="display:block">Could not open: ${esc(e.message)}</div>`; }
+function populateTopics(){
+  const sel = document.getElementById('topicFilter');
+  sel.querySelectorAll('option:not([value=""])').forEach(o=>o.remove());
+  const topics = [...new Set(DOCS.flatMap(d=>d.topics||[]))].sort();
+  topics.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
 }
 
-/* ---------- RUN NEW ---------- */
-async function runQC(){
-  const cid=document.getElementById('cid').value.trim();
-  const text=document.getElementById('ctext').value.trim();
-  const et=document.getElementById('errtoast'); et.style.display='none';
-  if(!cid) return toast('Content ID is required.');
-  if(!text) return toast('Paste some content to review.');
-  const btn=document.getElementById('runbtn'), stat=document.getElementById('stat');
-  btn.disabled=true; stat.innerHTML='<span class="spin"></span>Detecting domains, loading references, reviewing…';
-  try{
-    const r=await fetch(QC_RUN,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({content_id:cid,content_version:document.getElementById('cver').value.trim(),
-        content_title:document.getElementById('ctitle').value.trim(),content:text})});
-    if(!r.ok) throw new Error('Server returned '+r.status);
-    const data=await r.json();
-    if(!data.ok) throw new Error(data.error||'Review failed.');
-    show('review'); renderReview(data.review,data.review_id,[]); stat.textContent='';
-  }catch(e){ toast('Could not complete the review: '+e.message); stat.textContent=''; }
-  finally{ btn.disabled=false; }
+/* ---- filter + render (client-side over the loaded list) -------------------*/
+function render(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const st = document.getElementById('statusFilter').value;
+  const tp = document.getElementById('topicFilter').value;
+  const filtered = DOCS.filter(d=>{
+    if(st && d.status!==st) return false;
+    if(tp && !(d.topics||[]).includes(tp)) return false;
+    if(q){
+      const hay = [d.title,d.issuer,...(d.topics||[]),...(d.governing_for||[]),
+        ...((d.sections||[]).map(s=>s.label||''))].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const grid=document.getElementById('grid'), empty=document.getElementById('empty');
+  document.getElementById('count').textContent = `${filtered.length} of ${DOCS.length} references`;
+  grid.innerHTML='';
+  empty.style.display = filtered.length?'none':'block';
+  filtered.forEach(d=>grid.appendChild(card(d)));
 }
-function toast(m){const et=document.getElementById('errtoast');et.textContent=m;et.style.display='block';}
 
-/* ---------- RENDER ONE REVIEW ---------- */
-function statusAllowsRD(status){ return status==='pending_rd' || status==='returned'; }
-
-function renderReview(rv, review_id, signoffs){
-  const el=document.getElementById('review');
-  const _t=document.getElementById('rvtoast'); if(_t){ _t.style.display='none'; _t.textContent=''; }
-  const sc=rv.score||1;
-  const findings=rv.findings||[];
-  const errs=findings.filter(f=>f.tier==='error'),warns=findings.filter(f=>f.tier==='warning'),flags=findings.filter(f=>f.tier==='flag');
-  const trigs=rv.elevated_review_triggers||[], gaps=rv.coverage_gaps||[], refs=rv.references_consulted||[];
-
-  const who=WHO[document.getElementById('whoami').value] || WHO.rita;
-  const st = rv.status||'pending_rd';
-  // RD dispositions only when it's an RD acting on a pending_rd/returned review.
-  const canDispose = who.role==='rd' && statusAllowsRD(st);
-  // Editorial (2nd reviewer) approves only when acting on a pending_editorial review.
-  const canApprove = who.role==='editorial' && st==='pending_editorial';
-
-  // (re)build CURRENT state
-  CURRENT = { review_id, output: rv, status: rv.status||'pending_rd', dispo:{} };
-  findings.forEach(f=>{ CURRENT.dispo[f.id] = { decision:null, final_text:null, note:null, original_suggestion:(f.suggested_edit??null) }; });
-
-  let banners='';
-  if(rv.in_scope===false) banners+=`<div class="banner scope"><b>Out of scope.</b> ${esc(rv.scope_note||'Not scored.')}</div>`;
-  if(trigs.length) banners+=`<div class="banner elevated"><b>Must reach the RD.</b> Elevated categories: ${trigs.map(t=>'<span class="pill trig">'+esc(TRIG_LABEL[t]||t)+'</span>').join('')}</div>`;
-  if(!errs.length&&!warns.length&&rv.in_scope!==false) banners+=`<div class="banner clean"><b>No errors or warnings.</b> Any items below are flags.</div>`;
-
-  const dispoHtml=f=>{
-    const isOmission = (f.anchor_text==null || f.anchor_text==='');
-    const hasEdit = !!(f.suggested_edit && f.suggested_edit.trim());
-    const acceptBtn = hasEdit
-      ? `<button class="dbtn" data-act="accept" onclick="setDispo('${esc(f.id)}','accept')">Accept as is</button>`
-      : `<button class="dbtn" data-act="accept" disabled title="No AI suggestion to accept — use Accept edits or Reject" style="opacity:.4;cursor:not-allowed">Accept as is</button>`;
-    let hint='';
-    if(isOmission && hasEdit) hint=`<div class="omit">Omission — no passage to swap. On accept, the AI's text is recorded and you'll place it into the document before signing off.</div>`;
-    else if(isOmission && !hasEdit) hint=`<div class="omit">Omission — the AI gave no suggested text. Use <b>Accept edits</b> to type what should be added (you'll place it in the document), or <b>Reject</b>.</div>`;
-    else if(!hasEdit) hint=`<div class="omit">No AI suggestion for this finding. Use <b>Accept edits</b> to write the replacement, or <b>Reject</b>.</div>`;
-    return `<div class="dispo" data-fid="${esc(f.id)}">
-      <div class="dbtns">
-        ${acceptBtn}
-        <button class="dbtn" data-act="edit" onclick="setDispo('${esc(f.id)}','edit')">Accept edits</button>
-        <button class="dbtn" data-act="reject" onclick="setDispo('${esc(f.id)}','reject')">Reject</button>
-        <span class="dstate none" data-state>Not set</span>
-      </div>
-      <textarea class="dedit hidden" data-edit placeholder="${isOmission?'Type the text to add, then it will be placed in the document.':'Edit the correction text, then it will be placed as written.'}">${esc(f.suggested_edit||'')}</textarea>
-      <input class="dnote" data-dnote type="text" placeholder="Note (optional)">
-      ${hint}
+function card(d){
+  const el=document.createElement('div'); el.className='doc';
+  const govs=(d.governing_for||[]).map(g=>`<span class="domain">${esc(g)}</span>`).join('');
+  el.innerHTML=`
+    <div class="row1">
+      <div><div class="title">${esc(d.title)}</div><div class="issuer">${esc(d.issuer||'')}</div></div>
+      <span class="pill ${esc(d.status)}">${esc(d.status)}</span>
+    </div>
+    <div class="meta"><span>Version <b>${esc(d.version||'—')}</b></span>
+      <span>Retrieved <b>${esc(fmtDate(d.retrieved_at))}</b></span></div>
+    ${govs?`<div class="domains">${govs}</div>`:''}
+    <div class="foot">
+      <button class="btn" data-act="view">View text</button>
+      <button class="btn" data-act="edit">Edit</button>
+      <button class="btn danger" data-act="del">Remove</button>
     </div>`;
+  el.querySelector('[data-act=view]').onclick=()=>viewDoc(d);
+  el.querySelector('[data-act=edit]').onclick=()=>openAdd(d);
+  el.querySelector('[data-act=del]').onclick=()=>delDoc(d);
+  return el;
+}
+
+/* ---- view (fetches body_text via a single-doc list call) -----------------*/
+async function viewDoc(d){
+  document.getElementById('vTitle').textContent=d.title;
+  document.getElementById('vIssuer').textContent=d.issuer||'';
+  document.getElementById('vKv').innerHTML=`
+    <div class="k">doc_id</div><div><code>${esc(d.doc_id)}</code></div>
+    <div class="k">Status</div><div>${esc(d.status)}</div>
+    <div class="k">Version</div><div>${esc(d.version||'—')}</div>
+    <div class="k">Governs</div><div>${esc((d.governing_for||[]).join(', ')||'—')}</div>
+    <div class="k">Source</div><div>${d.source_url?`<a href="${esc(d.source_url)}" target="_blank" rel="noopener">${esc(d.source_url)}</a>`:'—'}</div>
+    <div class="k">Hash</div><div><code style="font-size:11px">${esc(d.content_hash||'—')}</code></div>`;
+  const vt=document.getElementById('vText'); vt.innerHTML='<div class="doctext">Loading text…</div>';
+  openModal('viewOverlay');
+  try{
+    const res = await postJSON(READ, {mode:'list', doc_id:d.doc_id});
+    const full = (res.docs||[]).find(x=>x.doc_id===d.doc_id);
+    vt.innerHTML=`<div class="doctext">${esc(full && full.body_text ? full.body_text : '(no text stored)')}</div>`;
+  }catch(e){ vt.innerHTML='<div class="doctext">Could not load the text.</div>'; }
+}
+
+/* ---- add / edit -----------------------------------------------------------*/
+document.getElementById('addBtn').onclick=()=>openAdd(null);
+
+async function openAdd(d){
+  editingId = d ? d.doc_id : null;
+  document.getElementById('aHeading').textContent = d?'Edit reference':'Add reference';
+  const g=id=>document.getElementById(id);
+  g('aId').value=d?d.doc_id:''; g('aId').disabled=!!d;   // doc_id immutable on edit
+  g('aTitle').value=d?d.title:''; g('aIssuer').value=d?(d.issuer||''):''; g('aVersion').value=d?(d.version||''):'';
+  g('aStatus').value=d?d.status:'governing'; g('aUrl').value=d?(d.source_url||''):'';
+  g('aTopics').value=d?(d.topics||[]).join(', '):''; g('aGov').value=d?(d.governing_for||[]).join(', '):'';
+  g('aText').value='';
+  if(d){
+    try{ const res=await postJSON(READ,{mode:'list',doc_id:d.doc_id});
+      const full=(res.docs||[]).find(x=>x.doc_id===d.doc_id);
+      g('aText').value=full&&full.body_text?full.body_text:''; }catch(_){}
+  }
+  openModal('addOverlay');
+}
+
+document.getElementById('aSave').onclick=async()=>{
+  const g=id=>document.getElementById(id).value.trim();
+  const doc_id=g('aId'); const text=document.getElementById('aText').value;
+  if(!doc_id||!g('aTitle')||!text){ toast("doc_id, title, and text are required.",true); return; }
+  const payload={
+    action:'upsert', doc_id,
+    title:g('aTitle'), issuer:g('aIssuer'), version:g('aVersion'),
+    source_url:g('aUrl'), status:g('aStatus'),
+    topics:splitList(g('aTopics')), governing_for:splitList(g('aGov')),
+    text
   };
-
-  const fhtml=f=>`<div class="finding ${esc(f.tier)}">
-     <div><span class="tier ${esc(f.tier)}">${esc(f.tier)}</span><span class="fclaim">${esc(f.claim)}</span>${f.location?`<span class="floc">· ${esc(f.location)}</span>`:''}</div>
-     ${f.reference&&(f.reference.doc_id||f.reference.note)?`<div class="fref">${f.reference.doc_id?`<b>${esc(f.reference.doc_id)}</b>${f.reference.version?` (${esc(f.reference.version)})`:''} — `:''}${esc(f.reference.note||'')}</div>`:''}
-     ${f.suggested_edit?`<div class="fedit"><b>Suggested edit:</b> ${esc(f.suggested_edit)}</div>`:''}
-     ${canDispose?dispoHtml(f):''}
-   </div>`;
-
-  let trailHtml='';
-  if(signoffs && signoffs.length){
-    trailHtml=`<div class="trail"><b>Paper trail</b>${signoffs.map(s=>`<div class="ev">${esc((s.signed_at||'').slice(0,16).replace('T',' '))} — ${esc(s.reviewer_user_id)} (${esc(s.reviewer_role)}) · ${esc(s.decision)}${s.note?' · '+esc(s.note):''}</div>`).join('')}</div>`;
-  }
-
-  // corrected doc, if one already exists on the stored review
-  let correctedHtml='';
-  if(rv.corrected_content || (CURRENT.output && CURRENT.output.corrected_content)){
-    const cc = rv.corrected_content || CURRENT.output.corrected_content;
-    correctedHtml = renderCorrected(rv.content_source||CURRENT.output.content_source||null, cc);
-  }
-
-  const signBar = canDispose ? `<div class="signbar">
-      <div class="prog" id="dprog">0 of ${findings.length} findings dispositioned.</div>
-      <input class="signnote" id="signnote" type="text" placeholder="Overall note (optional)">
-      <button class="btn" id="signbtn" onclick="submitSignoff('approve')" disabled>Sign off &amp; assemble</button>
-    </div>` : '';
-  const founderBar = canApprove ? `<div class="signbar">
-      <div class="prog">Rita has signed off. Review the corrected document above, then approve or return it.</div>
-      <input class="signnote" id="foundernote" type="text" placeholder="Note (optional)">
-      <button class="btn ghost" onclick="founderDecide('return')">Return to Rita</button>
-      <button class="btn" onclick="founderDecide('approve')">Approve &amp; lock</button>
-    </div>` : '';
-
-  el.innerHTML=`<div class="panel">
-     <div class="rvhead">
-       <div><div class="rvtitle">${esc(rv.content_title||rv.content_id)}</div>
-         <div class="rvmeta">${esc(rv.content_id)} · ${esc(rv.content_version)} · reviewed ${esc((rv.reviewed_at||'').slice(0,10))} · ${esc(rv.model||'')} · status <b>${esc(rv.status||'pending_rd')}</b>${review_id?` · id ${esc(String(review_id)).slice(0,8)}`:''}</div></div>
-       <div class="scorebox s${sc}"><div class="n">${sc}</div><div class="l">${esc(SCORE_LABEL[sc]||'')}</div></div>
-     </div>
-     ${banners}
-     ${rv.score_rationale?`<p style="color:var(--muted);font-size:14px;margin:0 0 4px">${esc(rv.score_rationale)}</p>`:''}
-     ${errs.length?`<div class="sect"><h3>Errors (${errs.length})</h3>${errs.map(fhtml).join('')}</div>`:''}
-     ${warns.length?`<div class="sect"><h3>Warnings (${warns.length})</h3>${warns.map(fhtml).join('')}</div>`:''}
-     ${flags.length?`<div class="sect"><h3>Flags (${flags.length})</h3>${flags.map(fhtml).join('')}</div>`:''}
-     ${gaps.length?`<div class="sect"><h3>Coverage gaps (${gaps.length})</h3>${gaps.map(g=>`<div class="gap"><b>${esc(g.claim_domain)}</b> — ${esc(g.note)}</div>`).join('')}</div>`:''}
-     <div class="sect"><h3>References consulted (${refs.length})</h3><div class="reflist">${refs.length?refs.map(r=>`<code>${esc(r.doc_id)}</code> ${esc(r.version||'')}`).join(' · '):'None routed.'}</div></div>
-     ${trailHtml}
-     <div id="correctedbox">${correctedHtml}</div>
-     ${founderBar}
-     ${signBar}
-     <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → editorial review); nothing here constitutes approval.</div>
-   </div>`;
-  el.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-/* ---------- DISPOSITION STATE ---------- */
-function setDispo(fid, act){
-  const d=CURRENT.dispo[fid]; if(!d) return;
-  d.decision=act;
-  const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
-  if(box){
-    box.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('on-accept','on-edit','on-reject'));
-    const btn=box.querySelector(`.dbtn[data-act="${act}"]`); if(btn) btn.classList.add('on-'+act);
-    const edit=box.querySelector('[data-edit]');
-    edit.classList.toggle('hidden', act!=='edit');
-    const st=box.querySelector('[data-state]');
-    st.className='dstate '+act; st.textContent=act==='accept'?'Accept as is':act==='edit'?'Accept edits':'Reject';
-  }
-  refreshProgress();
-}
-function cssq(s){ return String(s).replace(/"/g,'\\"'); }
-function collectDispositions(){
-  const out=[]; let allSet=true;
-  for(const [fid,d] of Object.entries(CURRENT.dispo)){
-    if(!d.decision){ allSet=false; continue; }
-    const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
-    const noteEl=box?box.querySelector('[data-dnote]'):null;
-    const note=noteEl&&noteEl.value.trim()?noteEl.value.trim():null;
-    let final_text=null;
-    if(d.decision==='accept'){ final_text=d.original_suggestion; }
-    else if(d.decision==='edit'){ const e=box?box.querySelector('[data-edit]'):null; final_text=e?e.value:null; }
-    out.push({finding_id:fid, decision:d.decision, final_text, original_suggestion:d.original_suggestion, note});
-  }
-  return {list:out, allSet};
-}
-function refreshProgress(){
-  const total=Object.keys(CURRENT.dispo).length;
-  const set=Object.values(CURRENT.dispo).filter(d=>d.decision).length;
-  const p=document.getElementById('dprog'); if(p) p.innerHTML=`<b>${set}</b> of ${total} findings dispositioned.`;
-  const btn=document.getElementById('signbtn'); if(btn) btn.disabled = (set<total);
-}
-
-/* ---------- SUBMIT SIGNOFF (C1 -> C2), two-phase for omissions ---------- */
-// Client-side normalize + assemble MIRRORS the server (Assemble Corrected) for preview only.
-function cNormalize(s){return s.replace(/[\u2018\u2019\u201B\u2032\u0060\u00B4]/g,"'").replace(/[\u201C\u201D\u201F\u2033]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/\s+/g,' ');}
-function cBuildNormMap(orig){let norm='';const map=[];let i=0;const n=orig.length;while(i<n){const ch=orig[i];if(/\s/.test(ch)){let j=i;while(j<n&&/\s/.test(orig[j]))j++;norm+=' ';map.push(i);i=j;}else{let out=ch;if('\u2018\u2019\u201B\u2032\u0060\u00B4'.includes(ch))out="'";else if('\u201C\u201D\u201F\u2033'.includes(ch))out='"';else if('\u2013\u2014'.includes(ch))out='-';norm+=out;map.push(i);i++;}}map.push(n);return{norm,map};}
-// returns {swapped:string, unplaced:[...]} applying only anchor swaps (Step 1)
-function cApplySwaps(original, findings, dispoList){
-  const anchorOf={}; findings.forEach(f=>anchorOf[f.id]=(f.anchor_text??null));
-  const {norm,map}=cBuildNormMap(original);
-  const placements=[]; const unplaced=[];
-  for(const d of dispoList){
-    if(d.decision==='reject')continue;
-    if(d.decision!=='accept'&&d.decision!=='edit')continue;
-    const anchor=anchorOf[d.finding_id];
-    if(anchor==null||anchor==='')continue; // omission -> insertion phase
-    const na=cNormalize(anchor).trim();const occ=[];let s=0;
-    while(true){const k=norm.indexOf(na,s);if(k<0)break;occ.push([k,k+na.length]);s=k+1;}
-    if(occ.length===0)unplaced.push({finding_id:d.finding_id,reason:'anchor_not_found'});
-    else if(occ.length>1)unplaced.push({finding_id:d.finding_id,reason:'anchor_multiple_matches'});
-    else placements.push({s:map[occ[0][0]],e:map[occ[0][1]],t:d.final_text,id:d.finding_id});
-  }
-  placements.sort((a,b)=>a.s-b.s);const ov=new Set();
-  for(let i=1;i<placements.length;i++)if(placements[i].s<placements[i-1].e){ov.add(placements[i-1].id);ov.add(placements[i].id);}
-  for(const p of placements)if(ov.has(p.id))unplaced.push({finding_id:p.id,reason:'anchor_overlap'});
-  const apply=placements.filter(p=>!ov.has(p.id)).sort((a,b)=>b.s-a.s);
-  let r=original;for(const p of apply)r=r.slice(0,p.s)+p.t+r.slice(p.e);
-  return {swapped:r, unplaced};
-}
-function splitParas(text){const parts=text.split(/(\n\s*\n)/);const paras=[];let sep='\n\n';for(let i=0;i<parts.length;i++){if(i%2===0)paras.push(parts[i]);else if(!sep)sep=parts[i];}const s0=parts.find((_,i)=>i%2===1);return {paras, sep:s0||'\n\n'};}
-
-let PLACE=null; // {swapped, paras, sep, omissions:[{finding_id,final_text,idx|null}], baseDispo:[...], decision}
-
-async function submitSignoff(decision){
-  const who=WHO[document.getElementById('whoami').value]||WHO.rita;
-  const {list, allSet}=collectDispositions();
-  if(decision==='approve' && !allSet){ toastReview('Disposition every finding before signing off.'); return; }
-  for(const d of list){
-    if((d.decision==='accept'||d.decision==='edit') && (d.final_text==null||d.final_text==='')){
-      const msg = d.decision==='edit' ? `Finding ${d.finding_id}: edit text is empty — type the replacement or choose Reject.` : `Finding ${d.finding_id}: nothing to accept — use Accept edits to type the text, or Reject.`;
-      toastReview(msg); flashFinding(d.finding_id); return;
-    }
-  }
-  if(decision==='return'){ return postSignoff('return', list, null); }
-
-  // APPROVE: find accepted omissions (anchor_text null) needing placement.
-  const findings=CURRENT.output.findings||[];
-  const anchorOf={}; findings.forEach(f=>anchorOf[f.id]=(f.anchor_text??null));
-  const omissions=list.filter(d=>(d.decision==='accept'||d.decision==='edit') && (anchorOf[d.finding_id]==null||anchorOf[d.finding_id]===''))
-                      .map(d=>({finding_id:d.finding_id, final_text:d.final_text, idx:null}));
-  if(omissions.length===0){ return postSignoff('approve', list, null); } // no manual placement needed
-
-  // enter placement phase
-  const original=CURRENT.output.content_source||null;
-  if(original==null){ toastReview('No original content stored - cannot place insertions. Re-run the first pass so content_source is saved.'); return; }
-  const {swapped}=cApplySwaps(original, findings, list);
-  const {paras, sep}=splitParas(swapped);
-  PLACE={ swapped, paras, sep, omissions, baseDispo:list, decision:'approve' };
-  renderPlacement();
-}
-
-function renderPlacement(){
-  // capture any in-progress textarea edits before re-render
-  syncPlaceEdits();
-  const box=document.getElementById('correctedbox');
-  const todo=PLACE.omissions.filter(o=>o.idx===null);
-  let doc='<div class="pdoc" id="pdoc">';
-  doc+=insSlot(-1);
-  PLACE.paras.forEach((p,i)=>{
-    doc+=`<div class="ppara">${esc(p)}</div>`;
-    const here=PLACE.omissions.filter(o=>o.idx===i);
-    here.forEach(o=>{
-      doc+=`<div class="pplaced">
-        <textarea class="pedit" data-fid="${esc(o.finding_id)}" oninput="syncPlaceEdits()">${esc(o.final_text)}</textarea>
-        <button class="rm" onclick="unplace('${esc(o.finding_id)}')">remove</button>
-      </div>`;
-    });
-    doc+=insSlot(i);
-  });
-  doc+='</div>';
-  let todoHtml;
-  if(todo.length){
-    todoHtml=`<div class="placebar"><b>Place ${todo.length} insertion(s).</b> Edit the text if needed, then click the "+ insert here" point where it should go. Currently placing: <b>${esc(todo[0].finding_id)}</b></div>`
-      + todo.map(o=>`<div class="omtodo"><b>${esc(o.finding_id)} — text to insert (editable):</b>
-          <textarea class="pedit" data-fid="${esc(o.finding_id)}" oninput="syncPlaceEdits()">${esc(o.final_text)}</textarea></div>`).join('');
-  } else {
-    todoHtml=`<div class="placebar"><b>All insertions placed.</b> You can still edit any inserted text below. Then confirm sign-off.</div>`;
-  }
-  const confirmBtn = `<div class="signbar">
-      <div class="prog">${PLACE.omissions.length-todo.length} of ${PLACE.omissions.length} insertions placed.</div>
-      <button class="btn ghost" onclick="cancelPlacement()">Back to findings</button>
-      <button class="btn" id="confirmbtn" onclick="confirmPlacement()" ${todo.length?'disabled':''}>Confirm sign-off</button>
-    </div>`;
-  box.innerHTML=`<div class="corrected"><div class="sect"><h3>Place insertions & review corrected document</h3>${todoHtml}${doc}${confirmBtn}</div></div>`;
-  document.querySelectorAll('.signbar').forEach((b,i)=>{ if(i===0 && !b.querySelector('#confirmbtn')) b.remove(); });
-  box.scrollIntoView({behavior:'smooth',block:'start'});
-}
-// pull current textarea values back into PLACE.omissions so edits persist across re-renders and into confirm
-function syncPlaceEdits(){
-  if(!PLACE) return;
-  document.querySelectorAll('.pedit').forEach(t=>{
-    const fid=t.getAttribute('data-fid');
-    const o=PLACE.omissions.find(x=>x.finding_id===fid);
-    if(o) o.final_text=t.value;
-  });
-}
-function insSlot(idx){
-  const next=PLACE.omissions.find(o=>o.idx===null);
-  if(!next) return `<div class="pins"><button disabled style="opacity:.3">+ insert here</button></div>`;
-  return `<div class="pins"><button onclick="placeHere(${idx})">+ insert here</button></div>`;
-}
-function placeHere(idx){
-  syncPlaceEdits();
-  const next=PLACE.omissions.find(o=>o.idx===null);
-  if(!next) return;
-  next.idx=idx;
-  renderPlacement();
-}
-function unplace(fid){
-  const o=PLACE.omissions.find(x=>x.finding_id===fid);
-  if(o) o.idx=null;
-  renderPlacement();
-}
-function cancelPlacement(){
-  PLACE=null;
-  renderReview(CURRENT.output, CURRENT.review_id, []); // re-render findings view (signoffs re-fetched on reopen)
-}
-function confirmPlacement(){
-  syncPlaceEdits();
-  // merge idx back into the disposition list, then post
-  const idxByFid={}; PLACE.omissions.forEach(o=>idxByFid[o.finding_id]=o.idx);
-  const list=PLACE.baseDispo.map(d=> (d.finding_id in idxByFid)
-    ? {...d, insert_after_paragraph: idxByFid[d.finding_id]} : d);
-  postSignoff('approve', list, null);
-}
-
-async function founderDecide(decision){
-  const who=WHO[document.getElementById('whoami').value]||WHO.will;
-  if(who.role!=='editorial'){ toastReview('Switch to Will (Founder) to approve.'); return; }
-  const note=(document.getElementById('foundernote')?document.getElementById('foundernote').value.trim()||null:null);
-  const verb=decision==='approve'?'Approving':'Returning';
-  const bar=document.querySelectorAll('.signbar'); bar.forEach(b=>b.querySelectorAll('button').forEach(x=>x.disabled=true));
+  const btn=document.getElementById('aSave'); btn.disabled=true; btn.textContent='Saving…';
   try{
-    const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:'editorial', reviewer_user_id:who.id,
-        decision, note, finding_dispositions:[] })});
-    const d=await r.json();
-    if(!d.ok) throw new Error(d.error||('Server '+r.status));
-    document.querySelectorAll('.signbar').forEach(b=>b.remove());
-    const box=document.getElementById('correctedbox');
-    if(decision==='approve'){
-      const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Approved &amp; locked by ${esc(who.id)}.</b> This corrected document is the final approved artifact (status: approved). Two sign-offs complete.</div>`;
-      box.innerHTML=banner + box.innerHTML;
-      const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>approved</b>');
-    } else {
-      toastReview('Returned to Rita for revision. Reloading queue...',true); setTimeout(showQueue,900); return;
-    }
-    box.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){ toastReview('Failed: '+e.message); document.querySelectorAll('.signbar button').forEach(x=>x.disabled=false); }
-}
+    const res=await postJSON(WRITE, payload);
+    if(res.blocked){ toast(res.error||'Blocked: governing-domain conflict.', true); }
+    else{ toast("Saved."); closeModal('addOverlay'); await loadIndex(); }
+  }catch(e){ toast("Save failed: "+e.message, true); }
+  finally{ btn.disabled=false; btn.textContent='Save reference'; }
+};
 
-async function postSignoff(decision, list, _unused){
-  const who=WHO[document.getElementById('whoami').value]||WHO.rita;
-  const btnId = decision==='approve' ? (PLACE?'confirmbtn':'signbtn') : null;
-  const btn=btnId?document.getElementById(btnId):null;
-  if(btn){btn.disabled=true;btn.textContent='Signing...';}
+async function delDoc(d){
+  if(!confirm(`Remove "${d.title}"?\nIt will be marked superseded (kept for audit), not hard-deleted.`)) return;
   try{
-    const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:who.role, reviewer_user_id:who.id,
-        decision, note:(document.getElementById('signnote')?document.getElementById('signnote').value.trim()||null:null),
-        finding_dispositions:list })});
-    const d=await r.json();
-    if(!d.ok) throw new Error(d.error||('Server '+r.status));
-    if(decision==='return'){ toastReview('Returned for revision. Reloading queue...',true); setTimeout(showQueue,900); return; }
-    PLACE=null;
-    document.querySelectorAll('.signbar').forEach(b=>b.remove());
-    document.querySelectorAll('.dispo').forEach(b=>b.remove()); // lock findings after sign-off
-    const box=document.getElementById('correctedbox');
-    const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Signed off by ${esc(who.id)}.</b> The corrected document is assembled and this review is now waiting for Will to approve (status: pending_editorial).${(d.unplaced&&d.unplaced.length)?` ${d.unplaced.length} finding(s) still need manual placement — see below.`:''}</div>`;
-    box.innerHTML=banner + renderCorrected(CURRENT.output.content_source||null, d.corrected_content) + renderUnplaced(d.unplaced||[]);
-    // update the status line in the header
-    const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>pending_editorial</b>');
-    box.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent=PLACE?'Confirm sign-off':'Sign off & assemble';} }
+    const res=await postJSON(WRITE, {action:'delete', doc_id:d.doc_id});
+    if(res.ok){ toast("Removed."); await loadIndex(); }
+    else toast(res.error||"Remove failed.", true);
+  }catch(e){ toast("Remove failed: "+e.message, true); }
 }
 
-/* ---------- CORRECTED-DOC DIFF ---------- */
-function renderCorrected(original, corrected){
-  if(corrected==null) return '';
-  const body = (original!=null) ? diffHtml(original, corrected) : `<div class="diff">${esc(corrected)}</div>`;
-  const dl = (CURRENT && CURRENT.status==='approved')
-    ? `<div style="margin-top:12px"><button class="btn ghost" onclick="downloadCorrected()">Download corrected doc</button><span style="margin-left:12px;color:var(--muted);font-size:12.5px">Changed paragraphs are wrapped in <code>**…**</code>.</span></div>`
-    : '';
-  return `<div class="corrected"><div class="sect"><h3>Corrected document</h3>${body}${dl}</div></div>`;
-}
-// Build the downloadable .txt: paragraph breaks preserved; any corrected paragraph whose text
-// does not appear verbatim in the original is wrapped whole in **…** (Option B, paragraph-level).
-function markedCorrected(original, corrected){
-  // Split corrected into paragraphs, keeping the exact separators so we can rejoin byte-for-byte.
-  const parts = corrected.split(/(\n\s*\n)/);   // even idx = paragraph, odd idx = separator
-  // Set of original paragraphs (normalized) for membership test.
-  const norm = s => s.replace(/\s+/g,' ').trim();
-  const origSet = new Set(
-    (original==null ? [] : original.split(/\n\s*\n/)).map(norm).filter(Boolean)
-  );
-  let out='';
-  for(let k=0;k<parts.length;k++){
-    if(k%2===1){ out+=parts[k]; continue; }      // separator, untouched
-    const p=parts[k];
-    const body=norm(p);
-    if(body && original!=null && !origSet.has(body)){
-      // changed/new paragraph — wrap the trimmed body, preserve leading/trailing whitespace
-      const lead=p.match(/^\s*/)[0], trail=p.match(/\s*$/)[0];
-      out += lead + '**' + p.slice(lead.length, p.length-trail.length) + '**' + trail;
-    } else {
-      out += p;
-    }
-  }
-  return {text:out};
-}
-function downloadCorrected(){
-  if(!CURRENT || CURRENT.status!=='approved'){ toastReview('Only approved reviews can be downloaded.'); return; }
-  const corrected = CURRENT.corrected_content || (CURRENT.output && CURRENT.output.corrected_content);
-  if(corrected==null){ toastReview('No corrected document on this review.'); return; }
-  const original = CURRENT.content_source || (CURRENT.output && CURRENT.output.content_source) || null;
-  const {text} = markedCorrected(original, corrected);
-  const O=CURRENT.output||{};
-  const cid=(O.content_id||CURRENT.content_id||'document'), cver=(O.content_version||CURRENT.content_version||'');
-  const header = `MedWell QC — approved corrected document · ${cid}${cver?' · '+cver:''}\nChanged paragraphs are wrapped in **…**.\n\n`;
-  const blob=new Blob([header+text], {type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const safe=s=>String(s).replace(/[^a-z0-9._-]+/gi,'-').replace(/^-+|-+$/g,'');
-  a.href=url; a.download=`${safe(cid)}_${safe(cver)||'v'}_approved.txt`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-function renderUnplaced(unplaced){
-  if(!unplaced || !unplaced.length) return '';
-  const R={omission_no_anchor:'Omission — needs manual insertion',anchor_not_found:'Anchor not found verbatim',anchor_multiple_matches:'Anchor appears more than once',anchor_overlap:'Overlaps another accepted edit',no_original_content:'No original content stored'};
-  return `<div class="unplaced"><b>${unplaced.length} finding(s) need manual placement.</b><ul>${unplaced.map(u=>`<li><code>${esc(u.finding_id)}</code> — ${esc(R[u.reason]||u.reason)}${u.final_text?`: “${esc(String(u.final_text).slice(0,120))}${String(u.final_text).length>120?'…':''}”`:''}</li>`).join('')}</ul></div>`;
-}
-// word-level diff: mark inserted/changed spans in the corrected text with <ins>
-function diffHtml(a, b){
-  const aw=a.split(/(\s+)/), bw=b.split(/(\s+)/);
-  const n=aw.length,m=bw.length;
-  // LCS DP (word arrays are small for a webinar script)
-  const dp=Array.from({length:n+1},()=>new Int32Array(m+1));
-  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=aw[i]===bw[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-  let i=0,j=0,out='';
-  const flush=[];
-  while(i<n&&j<m){
-    if(aw[i]===bw[j]){ out+=esc(bw[j]); i++;j++; }
-    else if(dp[i+1][j]>=dp[i][j+1]){ i++; }           // deletion (skip original)
-    else { out+=`<ins>${esc(bw[j])}</ins>`; j++; }     // insertion (mark)
-  }
-  while(j<m){ out+=`<ins>${esc(bw[j])}</ins>`; j++; }
-  return `<div class="diff">${out}</div>`;
-}
-function flashFinding(fid){
-  const box=document.querySelector(`.dispo[data-fid="${cssq(fid)}"]`);
-  const card=box?box.closest('.finding'):null;
-  if(card){ card.scrollIntoView({behavior:'smooth',block:'center'}); card.classList.add('flash'); setTimeout(()=>card.classList.remove('flash'),1800); }
-}
-function toastReview(m, ok){
-  let et=document.getElementById('rvtoast');
-  if(!et){ et=document.createElement('div'); et.id='rvtoast'; et.className='err-toast'; document.getElementById('review').prepend(et); }
-  et.textContent=m; et.style.display='block'; et.style.background=ok?'#eef7ea':'#fdeaea'; et.style.color=ok?'#2f6a24':'#8a1c1c'; et.style.borderColor=ok?'#bfe0b0':'#e6a6a6';
-}
+/* ---- utils ----------------------------------------------------------------*/
+function splitList(s){return s?s.split(',').map(x=>x.trim()).filter(Boolean):[];}
+function fmtDate(s){ if(!s) return '—'; return String(s).slice(0,10); }
+function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+let toastT;
+function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(err?' err':'');clearTimeout(toastT);toastT=setTimeout(()=>t.className='toast',2800);}
 
-/* boot */
-function saveWho(){ try{ localStorage.setItem('qc_whoami', document.getElementById('whoami').value); }catch(e){} }
-(function restoreWho(){ try{ const w=localStorage.getItem('qc_whoami'); if(w){ const s=document.getElementById('whoami'); if(s) s.value=w; } }catch(e){} })();
-showQueue();
+['q','statusFilter','topicFilter'].forEach(id=>
+  document.getElementById(id).addEventListener('input',render));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'))});
+
+loadIndex();
 </script>
 </body>
 </html>

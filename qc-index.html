@@ -297,8 +297,12 @@ function renderReview(rv, review_id, signoffs){
 
   const who=WHO[document.getElementById('whoami').value] || WHO.rita;
   const st = rv.status||'pending_rd';
-  // RD dispositions only when it's an RD acting on a pending_rd/returned review.
-  const canDispose = who.role==='rd' && statusAllowsRD(st);
+  // Builder flow (DRL admin): the editorial pass was done in the builder and recorded at
+  // Finalize. Then the RD gives ONE approve/return on the final copy — no re-dispositioning.
+  const builderPass = (signoffs||[]).find(s=>s.reviewer_role==='editorial' && s.decision==='approve');
+  const rdFinal = who.role==='rd' && st==='pending_rd' && !!builderPass;
+  // RD dispositions only when it's an RD acting on a pending_rd/returned review (standard flow).
+  const canDispose = who.role==='rd' && statusAllowsRD(st) && !rdFinal;
   // Editorial (2nd reviewer) approves only when acting on a pending_editorial review.
   const canApprove = who.role==='editorial' && st==='pending_editorial';
 
@@ -334,10 +338,20 @@ function renderReview(rv, review_id, signoffs){
     </div>`;
   };
 
+  const bDispo={};
+  if(builderPass){ let arr=builderPass.finding_dispositions;
+    if(typeof arr==='string'){ try{ arr=JSON.parse(arr); }catch(e){ arr=[]; } }
+    (Array.isArray(arr)?arr:[]).forEach(d=>{ if(d&&d.finding_id) bDispo[d.finding_id]=d; }); }
+  const bLabel=f=>{ const d=bDispo[f.id]; if(!builderPass||!d) return '';
+    const txt = d.decision==='accept' ? 'Accepted the suggestion'
+              : d.decision==='edit'   ? 'Edited: '+esc(d.final_text||'')
+              : 'Rejected (kept original)';
+    return `<div class="fedit" style="background:#eef5f0"><b>${esc(builderPass.reviewer_user_id)} in the builder:</b> ${txt}</div>`; };
   const fhtml=f=>`<div class="finding ${esc(f.tier)}">
      <div><span class="tier ${esc(f.tier)}">${esc(f.tier)}</span><span class="fclaim">${esc(f.claim)}</span>${f.location?`<span class="floc">· ${esc(f.location)}</span>`:''}</div>
      ${f.reference&&(f.reference.doc_id||f.reference.note)?`<div class="fref">${f.reference.doc_id?`<b>${esc(f.reference.doc_id)}</b>${f.reference.version?` (${esc(f.reference.version)})`:''} — `:''}${esc(f.reference.note||'')}</div>`:''}
      ${f.suggested_edit?`<div class="fedit"><b>Suggested edit:</b> ${esc(f.suggested_edit)}</div>`:''}
+     ${bLabel(f)}
      ${canDispose?dispoHtml(f):''}
    </div>`;
 
@@ -357,6 +371,12 @@ function renderReview(rv, review_id, signoffs){
       <div class="prog" id="dprog">0 of ${findings.length} findings dispositioned.</div>
       <input class="signnote" id="signnote" type="text" placeholder="Overall note (optional)">
       <button class="btn" id="signbtn" onclick="submitSignoff('approve')" disabled>Sign off &amp; assemble</button>
+    </div>` : '';
+  const rdFinalBar = rdFinal ? `<div class="signbar">
+      <div class="prog">${esc(builderPass.reviewer_user_id)} resolved these findings in the builder. Review the final copy above, then approve (publishes it to the DRL) or return it.</div>
+      <input class="signnote" id="rdfinalnote" type="text" placeholder="Note (optional)">
+      <button class="btn ghost" onclick="rdFinalDecide('return')">Return</button>
+      <button class="btn" onclick="rdFinalDecide('approve')">Approve &amp; publish</button>
     </div>` : '';
   const founderBar = canApprove ? `<div class="signbar">
       <div class="prog">Rita has signed off. Review the corrected document above, then approve or return it.</div>
@@ -380,6 +400,7 @@ function renderReview(rv, review_id, signoffs){
      <div class="sect"><h3>References consulted (${refs.length})</h3><div class="reflist">${refs.length?refs.map(r=>`<code>${esc(r.doc_id)}</code> ${esc(r.version||'')}`).join(' · '):'None routed.'}</div></div>
      ${trailHtml}
      <div id="correctedbox">${correctedHtml}</div>
+     ${rdFinalBar}
      ${founderBar}
      ${signBar}
      <div class="draftnote">${esc(rv.reviewer||'MedWell QC — First Pass (AI, draft-only)')}. The AI only places approved text into the original — it never rewrites surrounding content. Approval requires two human sign-offs (RD → editorial review); nothing here constitutes approval.</div>
@@ -606,6 +627,30 @@ async function postSignoff(decision, list, _unused){
     const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>pending_editorial</b>');
     box.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){ toastReview('Sign-off failed: '+e.message); if(btn){btn.disabled=false;btn.textContent=PLACE?'Confirm sign-off':'Sign off & assemble';} }
+}
+
+// RD's single decision in the builder flow. Approve with no dispositions keeps the builder's
+// final copy; with the editorial pass already on record this makes the review 'approved' and
+// the QC Signoff workflow publishes the DRL item.
+async function rdFinalDecide(decision){
+  const who=WHO[document.getElementById('whoami').value]||WHO.rita;
+  if(who.role!=='rd'){ toastReview('Switch to Rita (RD) to sign off.'); return; }
+  const note=(document.getElementById('rdfinalnote')?document.getElementById('rdfinalnote').value.trim()||null:null);
+  document.querySelectorAll('.signbar button').forEach(x=>x.disabled=true);
+  try{
+    const r=await fetch(QC_SIGNOFF,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ review_id:CURRENT.review_id, reviewer_role:'rd', reviewer_user_id:who.id,
+        decision, note, finding_dispositions:[] })});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||('Server '+r.status));
+    if(decision==='return'){ toastReview('Returned for revision. Reloading queue...',true); setTimeout(showQueue,900); return; }
+    document.querySelectorAll('.signbar').forEach(b=>b.remove());
+    const box=document.getElementById('correctedbox');
+    const banner=`<div class="banner clean" style="margin-bottom:16px"><b>Approved by ${esc(who.id)}.</b> Both sign-offs are complete (status: ${esc(d.status||'approved')}).${d.published?' It is now live in the DRL.':''}</div>`;
+    box.innerHTML=banner + box.innerHTML;
+    const meta=document.querySelector('.rvmeta'); if(meta) meta.innerHTML=meta.innerHTML.replace(/status <b>[^<]*<\/b>/, 'status <b>'+esc(d.status||'approved')+'</b>');
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){ toastReview('Sign-off failed: '+e.message); document.querySelectorAll('.signbar button').forEach(x=>x.disabled=false); }
 }
 
 /* ---------- CORRECTED-DOC DIFF ---------- */

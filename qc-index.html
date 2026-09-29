@@ -4,13 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MedWell QC · First-Pass Review</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../wellness_tools/studio-brand.css">
+<script src="../wellness_tools/studio-brand.js"></script>
 <style>
 :root{
-  --bg:#f4f1ea; --card:#fbfaf6; --ink:#1e2d35; --muted:#5c6b72;
-  --line:#e2ddd0; --brand:#1a6882; --brand-2:#29a4c4; --brand-tint:#eaf6fa;
+  /* aliases onto studio-brand.css (--sb-*): MedWell by default, tenant brand when white-labeled */
+  --bg:var(--sb-bg); --card:var(--sb-panel); --ink:var(--sb-ink); --muted:var(--sb-muted);
+  --line:var(--sb-border); --brand:var(--sb-primary); --brand-2:var(--sb-accent); --brand-tint:var(--sb-tint);
   --err:#b3261e; --warn:#b7791f; --flag:#4a5e66; --ok:#3f7a34;
-  --radius:12px; --shadow:0 1px 3px rgba(30,45,53,.08),0 8px 24px rgba(30,45,53,.06);
+  --radius:var(--sb-r-card); --shadow:0 1px 3px rgba(30,45,53,.08),0 8px 24px rgba(30,45,53,.06);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55}
@@ -27,7 +29,7 @@ a{color:var(--brand);cursor:pointer}
 .linkbtn.primary:hover{background:#155470}
 .wrap{max-width:940px;margin:0 auto;padding:32px 24px 80px}
 .eyebrow{display:inline-block;border:1px solid var(--brand-2);color:var(--brand);border-radius:999px;padding:5px 14px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
-h1{font-family:Fraunces,serif;font-weight:400;font-size:38px;margin:16px 0 8px;line-height:1.1}
+h1{font-family:var(--sb-font);font-weight:400;font-size:38px;margin:16px 0 8px;line-height:1.1}
 h1 em{color:var(--brand);font-style:italic}
 .sub{color:var(--muted);max-width:62ch;margin:0 0 26px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
@@ -49,12 +51,13 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 @keyframes sp{to{transform:rotate(360deg)}}
 /* queue */
 .qhead{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
+.qhead .btn{padding:8px 16px;font-size:13px}
 .qgroup{margin-bottom:26px}
 .qgroup h3{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin:0 0 10px;font-weight:600;display:flex;align-items:center;gap:8px}
 .qcount{background:var(--brand-tint);color:var(--brand);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
 .qrow{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
 .qrow:hover{border-color:var(--brand-2);background:#fff}
-.qscore{width:34px;height:34px;flex:none;border-radius:8px;color:#fff;font-family:Fraunces,serif;font-size:18px;display:flex;align-items:center;justify-content:center}
+.qscore{width:34px;height:34px;flex:none;border-radius:8px;color:#fff;font-family:var(--sb-font);font-size:18px;display:flex;align-items:center;justify-content:center}
 .qmain{flex:1;min-width:0}
 .qtitle{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qmeta{color:var(--muted);font-size:12px;margin-top:2px}
@@ -64,10 +67,10 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .s1{background:#3f7a34}.s2{background:#6b8e23}.s3{background:#b7791f}.s4{background:#c05621}.s5{background:#b3261e}
 /* review (reused) */
 .rvhead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px}
-.rvtitle{font-family:Fraunces,serif;font-size:24px}
+.rvtitle{font-family:var(--sb-font);font-size:24px}
 .rvmeta{color:var(--muted);font-size:12px;margin-top:4px}
 .scorebox{text-align:center;min-width:118px;border-radius:12px;padding:14px 10px;color:#fff}
-.scorebox .n{font-family:Fraunces,serif;font-size:38px;line-height:1}
+.scorebox .n{font-family:var(--sb-font);font-size:38px;line-height:1}
 .scorebox .l{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.95;margin-top:4px}
 .banner{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px}
 .banner.elevated{background:#fff4e5;border:1px solid #f0c887;color:#8a5a00}
@@ -129,39 +132,80 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .qdel{margin-left:10px;flex:none;border:1px solid var(--line);background:#fff;color:#8a1c1c;border-radius:8px;padding:4px 9px;font-size:14px;cursor:pointer;opacity:.55;transition:opacity .15s,background .15s}
 .qrow:hover .qdel{opacity:1}
 .qdel:hover{background:#fdeaea;border-color:#e6a6a6}
+/* ===================== STUDIO CHROME (brand + layout) ===================== */
+body{font-family:var(--sb-font);background:var(--sb-bg);color:var(--sb-ink);font-size:14.5px}
+.sb-header .who{font-size:12.5px;display:flex;align-items:center;gap:6px;color:#fff;margin:0;font-weight:400}
+.sb-header .who select{font:inherit;font-size:12px;border:0;border-radius:6px;padding:4px 6px;background:rgba(255,255,255,.95);color:var(--sb-ink)}
+.hero{background:var(--sb-panel);border-bottom:1px solid var(--sb-border)}
+.hero-in{max-width:1100px;margin:0 auto;padding:30px clamp(16px,3vw,34px) 28px}
+.titleblock{min-width:0}
+.eyebrow{display:flex;align-items:center;gap:10px;border:0;padding:0;border-radius:0;font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--sb-accent-text);margin-bottom:10px}
+.eyebrow>span{width:24px;height:3px;border-radius:2px;background:var(--sb-accent)}
+h1{font-family:var(--sb-font);font-weight:800;font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.02em;margin:0 0 8px}
+h1 em{font-style:normal;color:var(--sb-accent-text)}
+.sub{margin:0;font-size:13.5px;color:var(--sb-muted);max-width:66ch}
+.body{max-width:1100px;margin:0 auto;padding:24px clamp(16px,3vw,34px) 80px}
+.crumbbar{background:var(--sb-panel);border-bottom:1px solid var(--sb-border)}
+.crumb-in{max-width:1100px;margin:0 auto;padding:12px clamp(16px,3vw,34px);font-size:13px;font-weight:600}
+.crumb-in a{color:var(--sb-accent-text)}
+.panel{border-radius:var(--sb-r-card);box-shadow:var(--sb-shadow)}
+.btn{border-radius:var(--sb-r-input)}
+.btn:hover{background:var(--sb-primary-hover)}
+.btn.ghost{border:1.5px solid var(--sb-border-st)}
+.btn.ghost:hover{background:var(--sb-tint);border-color:var(--sb-primary)}
+.qrow{border-radius:var(--sb-r-card);box-shadow:var(--sb-shadow);background:var(--sb-panel)}
+.qrow:hover{border-color:var(--sb-primary);background:var(--sb-panel)}
+.qscore,.rvtitle,.scorebox .n{font-family:var(--sb-font);font-weight:800}
+.rvtitle{font-weight:700}
+.finding{border-radius:var(--sb-r-card)}
+.signbar{border-radius:var(--sb-r-card)}
+.diff,.ppara,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:620px){ .sb-header .sb-product{display:none} .sb-header .who{width:100%} }
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="brand" onclick="showQueue()">MedWell <b>QC</b> · First-Pass Review</div>
-  <div class="tbtns">
-    <span class="who">Signed in as
+<header class="sb-header">
+  <img class="sb-logo" id="sbLogo" alt="">
+  <span class="sb-tenant" id="sbTenant"></span>
+  <span class="sb-product"><a onclick="showQueue()" style="opacity:1;text-decoration:none;cursor:pointer">Content QC</a></span>
+  <div class="sb-right">
+    <label class="who">Signed in as
       <select id="whoami" onchange="saveWho()">
         <option value="rita">Rita Madden (RD)</option>
         <option value="will">Will Clower (Founder)</option>
       </select>
-    </span>
-    <button class="linkbtn primary" onclick="showNew()">+ New review</button>
-    <button class="linkbtn" onclick="location.href='reference-library-index.html'">Reference library →</button>
+    </label>
+    <a href="reference-library-index.html">Reference library</a>
+    <button class="sb-btn-light" onclick="showNew()">New review</button>
   </div>
-</div>
+</header>
 
-<div class="wrap">
-
-  <!-- ========== QUEUE VIEW ========== -->
-  <div id="view-queue">
-    <span class="eyebrow">Review queue</span>
-    <h1>What's <em>in flight</em></h1>
-    <p class="sub">Everything the first pass has reviewed, grouped by whose turn it is. Click any item to open it.</p>
+<!-- ========== QUEUE VIEW ========== -->
+<div id="view-queue">
+  <section class="hero"><div class="hero-in">
+    <div class="titleblock">
+      <div class="eyebrow"><span></span>Review queue</div>
+      <h1>What's <em>in flight</em></h1>
+      <p class="sub">Everything the first pass has reviewed, grouped by whose turn it is. Open any item to review it.</p>
+    </div>
+  </div></section>
+  <div class="body">
     <div class="qhead"><span class="status" id="qstat"></span><button class="btn ghost" onclick="loadQueue()">Refresh</button></div>
     <div id="queue"></div>
   </div>
+</div>
 
-  <!-- ========== NEW REVIEW VIEW ========== -->
-  <div id="view-new" class="hidden">
-    <span class="eyebrow">Component B · AI First Pass · Draft-only</span>
-    <h1>Review a piece of <em>content</em></h1>
-    <p class="sub">Paste content below. The first pass finds which governing references apply, reads them whole, and returns a scored, source-cited draft review for the RD. It is advisory — never an approval.</p>
+<!-- ========== NEW REVIEW VIEW ========== -->
+<div id="view-new" class="hidden">
+  <section class="hero"><div class="hero-in">
+    <div class="titleblock">
+      <div class="eyebrow"><span></span>New review &middot; AI first pass &middot; draft only</div>
+      <h1>Review a piece of <em>content</em></h1>
+      <p class="sub">Paste content below. The first pass finds which governing references apply, reads them whole, and returns a scored, source-cited draft review for the RD. It is advisory, never an approval.</p>
+    </div>
+  </div></section>
+  <div class="body">
     <div class="panel">
       <div class="row">
         <div class="fld"><label for="cid">Content ID</label>
@@ -180,13 +224,14 @@ textarea{min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regula
       <div class="err-toast" id="errtoast"></div>
     </div>
   </div>
+</div>
 
-  <!-- ========== REVIEW VIEW ========== -->
-  <div id="view-review" class="hidden">
-    <a onclick="showQueue()">← Back to queue</a>
-    <div id="review" style="margin-top:14px"></div>
+<!-- ========== REVIEW VIEW ========== -->
+<div id="view-review" class="hidden">
+  <div class="crumbbar"><div class="crumb-in"><a onclick="showQueue()">&larr; Back to queue</a></div></div>
+  <div class="body">
+    <div id="review"></div>
   </div>
-
 </div>
 
 <script>
@@ -706,6 +751,15 @@ async function deleteReview(review_id,label){
 }
 function saveWho(){ try{ localStorage.setItem('qc_whoami', document.getElementById('whoami').value); }catch(e){} }
 (function restoreWho(){ try{ const w=localStorage.getItem('qc_whoami'); if(w){ const s=document.getElementById('whoami'); if(s) s.value=w; } }catch(e){} })();
+// Studio brand: tenant brand_config from hub-config; none/failed → MedWell defaults.
+(async function(){
+  try{
+    const r=await fetch("https://n8n-admin.willclower.com/webhook/hub-config",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
+    let c=await r.json(); if(Array.isArray(c)) c=c[0];
+    const nm=StudioBrand.apply(c&&c.brand_config, c&&c.name);
+    document.title=nm+" \u2014 Content QC";
+  }catch(e){ StudioBrand.apply(null); }
+})();
 showQueue();
 </script>
 </body>

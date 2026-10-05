@@ -102,7 +102,7 @@ function card(it){
   el.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
     el.querySelectorAll('button').forEach(x=>x.disabled=true);
     try{ const d=await post({ action:'resolve', check_id:it.check_id, state:b.dataset.s, who:$('whoami').value, note:el.querySelector('input').value });
-      if(d&&d.ok) load(); else { alert('Couldn\u2019t save that.'); el.querySelectorAll('button').forEach(x=>x.disabled=false); } }
+      if(d&&d.ok){ if(b.dataset.s==='library_updated'){ $('msg').style.display=''; $('msg').innerHTML='<b>Marked as updated.</b> If you loaded new text for \u201c'+esc(it.title)+'\u201d, also replace its file in the <b>Content Compliance</b> project so the copy there matches. (It will also be listed in next month\u2019s Teams message.)'; window.scrollTo(0,0); } load(); } else { alert('Couldn\u2019t save that.'); el.querySelectorAll('button').forEach(x=>x.disabled=false); } }
     catch(e){ alert('Couldn\u2019t save that.'); el.querySelectorAll('button').forEach(x=>x.disabled=false); }
   });
   return el;
@@ -111,7 +111,7 @@ async function load(){
   let d;
   try{ d=await post({ action:'list' }); }catch(e){ d=null; }
   if(!d||!d.ok){ $('msg').style.display=''; $('msg').textContent='Couldn\u2019t load the update checks. Try again in a moment.'; return; }
-  $('msg').style.display='none';
+  if(/^Couldn/.test($('msg').textContent)) $('msg').style.display='none';   // clear an old load error, keep the update reminder
   if(d.last_run) $('lede').textContent='Every month each canonical guideline is checked for a newer edition, a focused update or a replacement, and its stored link is tested. Last check: '+day(d.last_run)+'.';
   else { $('open').innerHTML='<p class="empty">No checks have run yet. The first one runs on the 1st of next month, or start it in n8n with \u201cRun now.\u201d</p>'; $('rest').innerHTML=''; $('done').innerHTML=''; return; }
   const open=d.items.filter(i=>i.review_state==='open');

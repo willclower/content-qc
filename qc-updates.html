@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guideline updates — Content QC</title>
+<link rel="stylesheet" href="../wellness_tools/studio-brand.css">
+<script src="../wellness_tools/studio-brand.js"></script>
+<style>
+  body{font-family:var(--sb-font);background:var(--sb-bg);color:var(--sb-ink);margin:0}
+  .sb-header .who{font-size:12.5px;display:flex;align-items:center;gap:6px;color:#fff}
+  .sb-header .who select{font:inherit;font-size:12px;border:0;border-radius:6px;padding:4px 6px;background:rgba(255,255,255,.95);color:var(--sb-ink)}
+  main{max-width:1000px;margin:0 auto;padding:28px clamp(16px,3vw,34px) 70px}
+  .eyebrow{display:flex;align-items:center;gap:10px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-accent-text);margin-bottom:8px}
+  .eyebrow span{width:24px;height:3px;border-radius:2px;background:var(--sb-accent)}
+  h1{font-weight:800;font-size:clamp(24px,2.6vw,32px);letter-spacing:-.02em;margin:0 0 6px}
+  .lede{margin:0 0 22px;font-size:13.5px;line-height:1.55;color:var(--sb-muted)}
+  h2{font-size:15px;font-weight:700;margin:26px 0 10px}
+  .card{background:var(--sb-panel);border:1px solid var(--sb-border);border-radius:var(--sb-r-card);box-shadow:var(--sb-shadow);padding:16px 18px;margin-bottom:12px}
+  .card.open{border-left:4px solid var(--sb-accent)}
+  .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .t{font-weight:700;font-size:14.5px} .iss{font-size:12px;color:var(--sb-subtle);margin-top:2px}
+  .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;background:var(--sb-bg);color:var(--sb-subtle)}
+  .b-update_found{background:#fbe9e7;color:#a12d1c} .b-possible_update{background:#fdf3e1;color:#8a5a00}
+  .b-check_failed{background:#eef1f3;color:#4a5e66} .b-no_change{background:var(--sb-green-tint);color:var(--sb-ok)}
+  .body{font-size:13px;line-height:1.55;color:var(--sb-muted);margin-top:10px}
+  .body b{color:var(--sb-ink)}
+  .body a{color:var(--sb-primary)}
+  .meta{font-size:11.5px;color:var(--sb-faint);margin-top:8px}
+  .acts{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .acts input{flex:1;min-width:180px;font:inherit;font-size:12.5px;height:34px;box-sizing:border-box;padding:0 10px;border:1.5px solid var(--sb-border);border-radius:var(--sb-r-input)}
+  .btn{font:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:var(--sb-r-input);border:1.5px solid var(--sb-primary);background:var(--sb-primary);color:#fff;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--sb-primary)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .empty{color:var(--sb-subtle);font-size:13px;padding:6px 0}
+  .row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--sb-border-lt);font-size:13px}
+  .row .s{font-size:11.5px;color:var(--sb-subtle)}
+  .note{background:var(--sb-panel);border:1px solid var(--sb-border-st);border-left:4px solid var(--sb-accent);font-size:13px;border-radius:var(--sb-r-input);padding:9px 14px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<header class="sb-header">
+  <img class="sb-logo" id="sbLogo" alt="">
+  <span class="sb-tenant" id="sbTenant"></span>
+  <span class="sb-product"><a href="qc-index.html" style="opacity:1;text-decoration:none">Content QC</a></span>
+  <div class="sb-right">
+    <label class="who">Signed in as
+      <select id="whoami"><option value="rita">Rita Madden (RD)</option><option value="will">Will Clower (Founder)</option></select>
+    </label>
+    <a href="qc-index.html">Review queue</a>
+    <a href="reference-library-index.html">Reference library</a>
+  </div>
+</header>
+<main>
+  <div class="eyebrow"><span></span>Guideline updates</div>
+  <h1>Is our reference library still current?</h1>
+  <p class="lede" id="lede">Every month each canonical guideline is checked for a newer edition, a focused update or a replacement, and its stored link is tested. Anything that needs a person shows up here first.</p>
+  <div class="note" id="msg" style="display:none"></div>
+  <h2>Needs a look</h2>
+  <div id="open"><p class="empty">Loading&hellip;</p></div>
+  <h2>Latest check: everything else</h2>
+  <div class="card" id="rest"><p class="empty">Loading&hellip;</p></div>
+  <h2>Recently handled</h2>
+  <div class="card" id="done"><p class="empty">Loading&hellip;</p></div>
+</main>
+<script>
+const URL_FLAGS = "https://n8n-admin.willclower.com/webhook/qc-update-flags";
+const $ = id => document.getElementById(id);
+const esc = t => String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const safeUrl = u => /^https?:\/\//i.test(String(u||'')) ? esc(u) : '';
+const day = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+const LBL = { update_found:'Update found', possible_update:'Possible update', check_failed:'Could not check', no_change:'Current' };
+const LINK = { ok:'link works', blocked:'site blocks automated checks (normal)', broken:'stored link is broken', unreachable:'site did not respond' };
+const STATE = { dismissed:'Dismissed', library_updated:'Library updated' };
+StudioBrand.apply(null);
+try{ const w=localStorage.getItem('qc_whoami'); if(w) $('whoami').value=w; }catch(e){}
+$('whoami').onchange=()=>{ try{ localStorage.setItem('qc_whoami',$('whoami').value); }catch(e){} };
+
+async function post(body){ const r=await fetch(URL_FLAGS,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); return r.json(); }
+function why(it){
+  if(it.result!=='no_change') return LBL[it.result];
+  if(it.link_status==='broken') return 'Stored link is broken';
+  return 'Library details to check';
+}
+function card(it){
+  const el=document.createElement('div'); el.className='card open';
+  const links=[];
+  if(it.newer_url) links.push(`<a href="${safeUrl(it.newer_url)}" target="_blank" rel="noopener">Newer version</a>`);
+  (it.evidence||[]).filter(u=>u!==it.newer_url).forEach((u,i)=>links.push(`<a href="${safeUrl(u)}" target="_blank" rel="noopener">Source ${i+1}</a>`));
+  const aff=(it.affected||[]);
+  el.innerHTML=`<div class="top"><div><div class="t">${esc(it.title)}</div><div class="iss">${esc(it.issuer)} \u00b7 version in library: ${esc(it.version_checked||'(blank)')}</div></div>
+      <span class="badge b-${esc(it.result==='no_change'?'possible_update':it.result)}">${esc(why(it))}</span></div>
+    <div class="body">
+      ${it.newer_title?`<div><b>Newer:</b> ${esc(it.newer_title)}${it.newer_version?' \u00b7 '+esc(it.newer_version):''}${it.newer_published?' \u00b7 published '+esc(it.newer_published):''}</div>`:''}
+      ${it.what_changed?`<div>${esc(it.what_changed)}</div>`:''}
+      ${it.data_note?`<div><b>Library details:</b> ${esc(it.data_note)}</div>`:''}
+      ${links.length?`<div>${links.join(' \u00b7 ')}</div>`:''}
+      ${aff.length?`<div><b>Content reviewed against this version (${aff.length}):</b> ${aff.map(a=>esc(a.title)+' ('+esc(a.status)+')').join(', ')}</div>`:''}
+    </div>
+    <div class="meta">Checked ${esc(day(it.run_at))} \u00b7 ${esc(LINK[it.link_status]||'link not checked')}${it.confidence?' \u00b7 confidence '+esc(it.confidence):''}</div>
+    <div class="acts"><input placeholder="Note (optional), e.g. loaded the 2026 edition"><button class="btn" data-s="library_updated">Library updated</button><button class="btn ghost" data-s="dismissed">Dismiss</button></div>`;
+  el.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    el.querySelectorAll('button').forEach(x=>x.disabled=true);
+    try{ const d=await post({ action:'resolve', check_id:it.check_id, state:b.dataset.s, who:$('whoami').value, note:el.querySelector('input').value });
+      if(d&&d.ok) load(); else { alert('Couldn\u2019t save that.'); el.querySelectorAll('button').forEach(x=>x.disabled=false); } }
+    catch(e){ alert('Couldn\u2019t save that.'); el.querySelectorAll('button').forEach(x=>x.disabled=false); }
+  });
+  return el;
+}
+async function load(){
+  let d;
+  try{ d=await post({ action:'list' }); }catch(e){ d=null; }
+  if(!d||!d.ok){ $('msg').style.display=''; $('msg').textContent='Couldn\u2019t load the update checks. Try again in a moment.'; return; }
+  $('msg').style.display='none';
+  if(d.last_run) $('lede').textContent='Every month each canonical guideline is checked for a newer edition, a focused update or a replacement, and its stored link is tested. Last check: '+day(d.last_run)+'.';
+  else { $('open').innerHTML='<p class="empty">No checks have run yet. The first one runs on the 1st of next month, or start it in n8n with \u201cRun now.\u201d</p>'; $('rest').innerHTML=''; $('done').innerHTML=''; return; }
+  const open=d.items.filter(i=>i.review_state==='open');
+  const rest=d.items.filter(i=>i.latest && i.review_state==='not_needed');
+  const done=d.items.filter(i=>i.review_state==='dismissed'||i.review_state==='library_updated');
+  const ob=$('open'); ob.innerHTML=''; if(!open.length) ob.innerHTML='<p class="empty">Nothing needs a look. Everything checked is current.</p>'; open.forEach(i=>ob.appendChild(card(i)));
+  $('rest').innerHTML = rest.length ? rest.map(i=>`<div class="row"><div>${esc(i.title)}<div class="s">${esc(i.issuer)} \u00b7 ${esc(i.version_checked||'')}</div></div><span class="badge b-no_change">Current</span></div>`).join('') : '<p class="empty">\u2014</p>';
+  $('done').innerHTML = done.length ? done.map(i=>`<div class="row"><div>${esc(i.title)}<div class="s">${esc(STATE[i.review_state])} by ${esc(i.reviewed_by||'')} on ${esc(day(i.reviewed_at))}${i.review_note?' \u2014 '+esc(i.review_note):''}</div></div><span class="badge b-${esc(i.result)}">${esc(LBL[i.result])}</span></div>`).join('') : '<p class="empty">Nothing handled in the last six months.</p>';
+}
+load();
+</script>
+</body>
+</html>
